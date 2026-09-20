@@ -43,10 +43,11 @@
                     making changes. Use this tool at your own risk. Metal Gear Solid and all related trademarks belong
                     to their respective owners.
                 </p>
-                <p><a href="https://gleeson.itch.io/peace-walker-font-pack">Peace Walker font by gleeson</a> - <a href="/fonts/CC-BY-SA-4.0.txt">License</a></p>
+                <p><a href="https://gleeson.itch.io/peace-walker-font-pack">Peace Walker font by gleeson</a> - <a
+                        href="/fonts/CC-BY-SA-4.0.txt">License</a></p>
             </div>
 
-            
+
 
         </div>
 
@@ -540,7 +541,6 @@
     document.getElementById("save-editor").style = "display: none;";
     document.getElementById("staff").style = "display: none;";
     document.getElementById("codename").style = "display: none;";
-    document.getElementById("staff-test").style = "display: none;";
 
     // Function to display the selected category
 
@@ -550,7 +550,6 @@
         document.getElementById("overview").style = "display: none;";
         document.getElementById("staff").style = "display: none;";
         document.getElementById("codename").style = "display: none;";
-        document.getElementById("staff-test").style = "display: none;";
 
         // Display the selected category
         if (tab === "staff") {
@@ -579,60 +578,60 @@
 <script src="scripts/session-ui.js"></script>
 
 <script>
-    'use strict';
+    "use strict";
 
     const $ = id => document.getElementById(id);
     let save = null;
-    function esc(v) {
-        const d = document.createElement('div');
-        d.textContent = String(v);
-        return d.innerHTML
-    }
 
-    function render() {
-        if (!save) return;
-        const q = $('search').value.trim().toUpperCase();
-        const list = save.staff.filter(s => !q || s.name.toUpperCase().includes(q) || String(s.index).includes(q));
-        $('rows').innerHTML = list.map(s => `<tr><td>${s.index}</td><td>${esc(s.name)}</td><td>${esc(s.location.label)}</td><td>${esc(s.tag.label)}</td><td>${esc(s.title.label)}</td><td>${esc(s.genderFlag)}</td><td>${s.life.current}</td><td>${s.psyche.current}</td><td>${s.conditions.morale}</td><td>${s.conditions.wounded}</td><td>${s.conditions.sick}</td><td>${s.conditions.ptsd}</td><td>${s.conditions.hostilityDisplayLevel} (${s.conditions.hostilityRaw})</td><td><button data-index="${s.index}">Details</button></td></tr>`).join('')
-    }
+    $("saveFile").addEventListener("change", async () => {
+        const fileInput = $("saveFile");
+        const file = fileInput.files[0];
 
-    $('search').addEventListener('input', render);
+        if (!file) return;
 
-    $('rows').addEventListener('click', e => {
-        const b = e.target.closest('button[data-index]');
-        if (!b || !save) return; $('details').textContent = JSON.stringify(save.getStaffByIndex(Number(b.dataset.index)), null, 2)
-    });
-
-    $('saveFile').addEventListener('change', async () => {
-        const f = $('saveFile').files[0];
-        if (!f) return;
         if (!VicbossSession.confirmFileReplacement()) {
-            $('saveFile').value = '';
+            fileInput.value = "";
             return;
         }
 
         try {
-            const nextSave = PWSE.open(await f.arrayBuffer(), f.name);
-            save = nextSave;
-            render();
-            document.getElementById("upload-container").style.display = "none";
-            $('save-editor').style.display = "flex";
+            const nextSave = PWSE.open(
+                await file.arrayBuffer(),
+                file.name
+            );
 
+            save = nextSave;
             window.currentPWSESave = save;
+
+            $("upload-container").style.display = "none";
+            $("save-editor").style.display = "flex";
+
             PWSEOverviewUI.setSave(save);
             PWSEStaffUI.setSave(save);
             PWSECodenameUI.setSave(save);
             VicbossSession.resetViewForNewSave();
 
-            console.log('PWSE save', save);
-            console.log('PWSE staff', save.staff)
-        } catch (err) {
-            console.error(err);
-            alert(err.message || String(err));
-            $('saveFile').value = '';
+            console.log("Vicboss save:", save);
+        } catch (error) {
+            console.error(error);
+
+            const message =
+                error.message ||
+                "Vicboss could not open this save file.";
+
+            const messageElement = $("editor-message");
+
+            if (messageElement) {
+                messageElement.textContent = message;
+                messageElement.dataset.type = "error";
+                messageElement.hidden = false;
+            } else {
+                alert(message);
+            }
+
+            fileInput.value = "";
         }
     });
-
 </script>
 
 </html>
