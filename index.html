@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vicboss - Peace Walker Save Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+
+        <h1>Vicboss - Peace Walker Save Editor</h1>
+
+        <!-- Small container for uploading save files -->
+        <fieldset>
+            <legend>Upload a save file here</legend>
+            <input id="saveFile" type="file" autocomplete="off">
+        </fieldset>
+
+        <!-- Container that is displayed when the save file has yet to be uploaded -->
+        <div id="upload-container">
+
+            <p>This tool is used for editing save files for Metal Gear Solid: Peace Walker for the Metal Gear Solid:
+                Master
+                Collection Vol. 2. This tool is only meant for PC: it will not work for console save files.</p>
+
+            <p>You can use this save editor to edit Mother Base soldiers, view/edit insignias and AI boards, and track
+                your
+                weapon usage for getting different codenames.</p>
+
+            <ul>
+                <li>Save location: SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[Your Steam ID]\ww</li>
+                <li>Find the save file you want: it will be in the format "STW000000xxxxx"</li>
+                <li>Make a backup of your save files before using the editor</li>
+            </ul>
+
+            <div class="disclaimer">
+                <p>
+                    Vicboss is an unofficial, fan-made save editor and is not affiliated with or endorsed by Konami.
+                    Editing save data may cause corruption or unexpected behaviour, so always create a backup before
+                    making changes. Use this tool at your own risk. Metal Gear Solid and all related trademarks belong
+                    to their respective owners.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- Main container that displays when the save file has been loaded -->
+
+        <div id="save-editor">
+
+            <!-- Navigation tabs above the main content -->
+            <div class="tabs">
+                <button class="tab" onclick="show('overview')">OVERVIEW</button>
+                <button class="tab" onclick="show('staff')">STAFF</button>
+                <button class="tab" onclick="show('codename')">CODENAMES</button>
+            </div>
+
+            <!-- Main content -->
+            <div class="save-editor-content">
+
+                <!-- Overview tab -->
+                <div id="overview">
+
+                    <div class="overview-content">
+
+                        <div class="overview-main">
+                            <h2 id="overview-profile-name">NAME</h2>
+
+                            <p>
+                                Last saved <br>
+                                <span id="overview-save-date"></span> <br>
+                                <span id="overview-save-time"></span>
+                            </p>
+
+                            <p>Play Time <br> <span id="overview-play-time"></span></p>
+                        </div>
+
+                        <div class="overview-secondary">
+                            <p>Heroism <br> <span id="overview-heroism"></span></p>
+                            <p>Camaraderie <br> <span id="overview-camaraderie"></span></p>
+                            <p>GMP <br> <span id="overview-gmp"></span></p>
+                            <p>Last Mission <br> <span id="overview-last-mission"></span></p>
+                        </div>
+
+                        <div class="overview-export">
+
+                            <div class="export-container">
+
+                                <button id="exportSave" type="button" disabled>
+                                    EXPORT SAVE
+                                </button>
+
+                                <!-- Option to set the "Last Saved" value to the current time -->
+                                <label class="export-last-saved">
+
+                                    <input type="checkbox" id="export-update-last-saved" checked>
+                                    Change "Last Saved" to current time
+
+                                    <!-- Info hover button -->
+                                    <span class="info-tip">
+                                        <span type="button" class="info-tip-button"
+                                            title="This is to avoid the new save looking identical to the old one">
+                                            i
+                                        </span>
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                            <ul>
+                                <li>Save the file back into the "ww" folder</li>
+                                <li>Do not rename the file - keep the name that it saves as</li>
+                                <li>Restart the game or load a save file then return to the title screen to update the
+                                    save file viewer
+                                </li>
+                            </ul>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <!-- Staff editor category -->
+                <div id="staff">
+
+                    <div id="staff-sidebar">
+
+                        <!-- Top of sidebar for filtering staff by location/name -->
+                        <div class="staff-sidebar-search">
+
+                            <label for="staff-sidebar-team">Team:</label>
+                            <select id="staff-sidebar-team">
+                                <option value="all">All</option>
+                                <option value="1">Waiting Room</option>
+                                <option value="2">Combat Unit</option>
+                                <option value="3">R&amp;D Team</option>
+                                <option value="4">Medical Team</option>
+                                <option value="5">Mess Hall Team</option>
+                                <option value="6">Intel Team</option>
+                                <option value="7">Trade Waiting Room</option>
+                                <option value="8">Brig</option>
+                                <option value="9">Sickbay</option>
+                            </select>
+
+                            <br>
+
+                            <label for="staff-sidebar-name">Search by Name</label>
+                            <input type="text" id="staff-sidebar-name" placeholder="Enter name here">
+
+                        </div>
+
+                        <!-- Rest of sidebar containing staff names -->
+                        <div id="staff-sidebar-content"></div>
+
+                    </div>
+
+                    <!-- Staff member detail panel -->
+                    <div id="staff-content">
+
+                        <!-- Overlay that appears when a staff member is dispatched on OUTER OPS -->
+                        <!-- For stability reasons, these staff members cannot be edited yet -->
+                        <div id="staff-outerops-overlay">
+                            <div>
+                                CURRENTLY DISPATCHED ON OUTER OPS
+                                <small>This staff member is read-only until they return.</small>
+                            </div>
+                        </div>
+
+                        <!-- Most important information (name, life psyche, gmp, morale) -->
+                        <div class="staff-main-details">
+                            <p id="staff-name">NAME</p>
+                            <p>LIFE: <input type="number" id="staff-life" value="1234" max="9999"><br>
+                                PSYCHE: <input type="number" id="staff-psyche" value="1234" max="9999"></p>
+
+                            <p>GMP: <input type="number" id="staff-gmp" value="1234"><br>
+                                Morale: <input type="number" id="staff-morale" min="0" max="999"></p>
+                        </div>
+
+                        <h2>Abilities</h2>
+
+                        <!-- Staff abilities - each ability has a grade, slider and numerical representation  -->
+                        <div class="staff-abilities">
+
+                            <div class="ability">
+                                <p>Combat
+                                    <span class="info-tip">
+                                        <span type="button" class="info-tip-button"
+                                            title="Combat is calculated using Combat Abilities - see below">
+                                            i
+                                        </span>
+                                    </span>
+                                </p>
+                                <p id="staff-combat-grade"></p>
+                                <input type="range" id="staff-combat-slider" min="0" max="1250">
+                                <input type="number" id="staff-combat-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>R&D</p>
+                                <p id="staff-rd-grade"></p>
+                                <input type="range" id="staff-rd-slider" min="0" max="1250">
+                                <input type="number" id="staff-rd-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Mess Hall</p>
+                                <p id="staff-messhall-grade"></p>
+                                <input type="range" id="staff-messhall-slider" min="0" max="1250">
+                                <input type="number" id="staff-messhall-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Medical</p>
+                                <p id="staff-medical-grade"></p>
+                                <input type="range" id="staff-medical-slider" min="0" max="1250">
+                                <input type="number" id="staff-medical-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Intel</p>
+                                <p id="staff-intel-grade"></p>
+                                <input type="range" id="staff-intel-slider" min="0" max="1250">
+                                <input type="number" id="staff-intel-num" min="0" max="1250">
+                            </div>
+
+                        </div>
+
+                        <h2>Details</h2>
+
+                        <!-- Gender, Location, Tag, Portrait, Title, Description, and Statuses -->
+                        <div class="staff-other-details">
+
+                            <p>Gender: <br> <span id="staff-gender"></span></p>
+                            <p>Location: <br> <span id="staff-location"></span></p>
+                            <p>Tag: <br> <span id="staff-tag"></span></p>
+                            <p>Portrait ID: <br> <span id="staff-portrait"></span></p>
+                            <p>Title: <br> <span id="staff-title"></span></p>
+
+                            <div class="staff-status">
+                                <p>Hostility: <span id="staff-hostility"></span></p>
+                                <p>Sick: <span id="staff-sick"></span></p>
+                                <p>Wounded: <span id="staff-wounded"></span></p>
+                                <p>PTSD: <span id="staff-ptsd"></span></p>
+                            </div>
+
+                        </div>
+
+                        <!-- Staff description (quote) -->
+                        <p class="staff-quote">Quote: <br> "<span id="staff-desc"></span>"</p>
+
+                        <!-- Combat abilities - same as regular abilities -->
+
+                        <h2>Combat Abilities</h2>
+                        <div class="staff-abilities">
+
+                            <div class="ability">
+                                <p>Shoot</p>
+                                <p id="staff-shoot-grade"></p>
+                                <input type="range" id="staff-shoot-slider" min="0" max="1250">
+                                <input type="number" id="staff-shoot-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Reload</p>
+                                <p id="staff-reload-grade"></p>
+                                <input type="range" id="staff-reload-slider" min="0" max="1250">
+                                <input type="number" id="staff-reload-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Throw</p>
+                                <p id="staff-throw-grade"></p>
+                                <input type="range" id="staff-throw-slider" min="0" max="1250">
+                                <input type="number" id="staff-throw-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Place</p>
+                                <p id="staff-place-grade"></p>
+                                <input type="range" id="staff-place-slider" min="0" max="1250">
+                                <input type="number" id="staff-place-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Walk Speed</p>
+                                <p id="staff-walkspeed-grade"></p>
+                                <input type="range" id="staff-walkspeed-slider" min="0" max="1250">
+                                <input type="number" id="staff-walkspeed-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Run Speed</p>
+                                <p id="staff-runspeed-grade"></p>
+                                <input type="range" id="staff-runspeed-slider" min="0" max="1250">
+                                <input type="number" id="staff-runspeed-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Fight</p>
+                                <p id="staff-fight-grade"></p>
+                                <input type="range" id="staff-fight-slider" min="0" max="1250">
+                                <input type="number" id="staff-fight-num" min="0" max="1250">
+                            </div>
+
+                            <div class="ability">
+                                <p>Defense</p>
+                                <p id="staff-defense-grade"></p>
+                                <input type="range" id="staff-defense-slider" min="0" max="1250">
+                                <input type="number" id="staff-defense-num" min="0" max="1250">
+                            </div>
+
+                        </div>
+
+                        <h2>Skills</h2>
+
+                        <!-- Four skill slots -->
+                        <div class="staff-skills">
+                            <select id="staff-skill-1"></select>
+                            <select id="staff-skill-2"></select>
+                            <select id="staff-skill-3"></select>
+                            <select id="staff-skill-4"></select>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Codenames / weapon tracker -->
+                <div id="codename">
+
+                    <section class="codename-tracker">
+                        <h2>Codename Tracker</h2>
+
+                        <p>A guide on getting all of the codenames is available <a
+                                href="https://gamefaqs.gamespot.com/boards/960566-metal-gear-solid-peace-walker/56113639"
+                                target="_blank">here</a></p>
+
+                        <section>
+
+                            <hr>
+
+                            <h3>Weapon Takedowns</h3>
+
+                            <!-- Lethal / non-lethal weapon takedowns -->
+
+                            <div class="weapons-takedowns">
+
+                                <div>
+                                    <p>
+                                        Total lethal takedowns:
+                                        <span id="codename-lethal-total">—</span>
+                                    </p>
+
+                                    <p>
+                                        Total non-lethal takedowns:
+                                        <span id="codename-nonlethal-total">—</span>
+                                    </p>
+
+                                    <p>
+                                        Current outcome:
+                                        <span id="codename-outcome-branch">—</span>
+                                    </p>
+
+                                    <p>
+                                        Most-used weapon type:
+                                        <span id="codename-dominant-types">—</span>
+                                    </p>
+
+                                    <p>
+                                        Current solo candidate:
+                                        <span id="codename-solo-candidates">—</span>
+                                    </p>
+
+                                    <p>
+                                        Current CO-OPS candidate:
+                                        <span id="codename-coop-candidates">—</span>
+                                    </p>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="takedowns-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Weapon type</th>
+                                                <th>Category</th>
+                                                <th>Lethal</th>
+                                                <th>Non-lethal</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="codename-counter-rows"></tbody>
+                                    </table>
+                                </div>
+
+
+                            </div>
+
+                        </section>
+
+                        <section class="codename-category">
+
+                            <h3>Codename Ranks</h3>
+
+                            <div class="codename-ranks">
+
+                                <div class="codename-details">
+
+                                    <p>
+                                        Camaraderie:
+                                        <span id="codename-camaraderie">—</span>
+                                    </p>
+
+                                    <p>Solo missions completed:
+                                        <span id="codename-missions-solo">—</span>
+                                    </p>
+
+                                    <p>CO-OPS missions completed:
+                                        <span id="codename-missions-coop">—</span>
+                                    </p>
+
+                                    <p>Combined completion:
+                                        <span id="codename-missions-completed">—</span>
+                                        (<span id="codename-missions-percent">—</span>)
+                                    </p>
+
+                                    <p>
+                                        Remaining slots:
+                                        <span id="codename-missions-remaining">—</span>
+                                    </p>
+
+                                </div>
+
+
+                                <div class="codename-next">
+
+                                    <p>
+                                        Requirements below apply to the current weapon-family candidates.
+                                        Each target is the next rank above the one you currently have.
+                                    </p>
+
+                                    <div class="table-container">
+                                        <table class="codename-next-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mode</th>
+                                                    <th>Codename</th>
+                                                    <th>Obtained rank</th>
+                                                    <th>Next rank</th>
+                                                    <th>What is needed?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="codename-progress-rows"></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <h3>Obtained Codenames</h3>
+
+                            <div class="table-container">
+
+                                <table class="obtained-codenames">
+                                    <thead>
+                                        <tr>
+                                            <th>Codename</th>
+                                            <th>Top rank</th>
+                                            <th>Obtained</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="codename-owned-rows"></tbody>
+                                </table>
+
+                            </div>
+
+                        </section>
+
+                        <!-- Guide for obtaining the four special codenames -->
+                        <section class="codename-category codename-elite">
+                            <h3>FOX, HOUND, DOBERMAN and FOXHOUND</h3>
+
+                            <p>
+                                Heroism:
+                                <span id="codename-heroism">—</span>
+                            </p>
+
+                            <p>
+                                Chapter 4:
+                                <span id="codename-chapter4">—</span>
+                            </p>
+
+                            <p>
+                                Weapon types balanced?
+                                <span id="codename-balanced">—</span>
+                            </p>
+
+                            <p id="codename-balance-summary"></p>
+
+                            <div class="table-container">
+                                <table class="foxhound-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Codename</th>
+                                            <th>Mode</th>
+                                            <th>Obtained rank</th>
+                                            <th>Next rank</th>
+                                            <th>What is needed?</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="codename-elite-rows"></tbody>
+                                </table>
+                            </div>
+
+                        </section>
+                    </section>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+</body>
+
+<script>
+
+    // Hide elements that should not immediately be visible
+    document.getElementById("save-editor").style = "display: none;";
+    document.getElementById("staff").style = "display: none;";
+    document.getElementById("codename").style = "display: none;";
+    document.getElementById("staff-test").style = "display: none;";
+
+    // Function to display the selected category
+
+    function show(tab) {
+
+        // Hide all categories
+        document.getElementById("overview").style = "display: none;";
+        document.getElementById("staff").style = "display: none;";
+        document.getElementById("codename").style = "display: none;";
+        document.getElementById("staff-test").style = "display: none;";
+
+        // Display the selected category
+        if (tab === "staff") {
+            // Staff category is displayed using flex instead of block
+            document.getElementById(tab).style = "display: flex;";
+        } else {
+            document.getElementById(tab).style = "display: block;";
+        }
+
+    }
+
+</script>
+
+<!-- Save file decryption scripts -->
+
+<script src="scripts/mission-lookups.js"></script>
+<script src="scripts/staff-lookups.js"></script>
+<script src="scripts/quotes-en.js"></script>
+
+<script src="scripts/codename-tracker.js"></script>
+<script src="scripts/core.js"></script>
+
+<script src="scripts/staff-edit-ui.js"></script>
+<script src="scripts/overview-ui.js"></script>
+<script src="scripts/codename-ui.js"></script>
+<script src="scripts/session-ui.js"></script>
+
+<script>
+    'use strict';
+
+    const $ = id => document.getElementById(id);
+    let save = null;
+    function esc(v) {
+        const d = document.createElement('div');
+        d.textContent = String(v);
+        return d.innerHTML
+    }
+
+    function render() {
+        if (!save) return;
+        const q = $('search').value.trim().toUpperCase();
+        const list = save.staff.filter(s => !q || s.name.toUpperCase().includes(q) || String(s.index).includes(q));
+        $('rows').innerHTML = list.map(s => `<tr><td>${s.index}</td><td>${esc(s.name)}</td><td>${esc(s.location.label)}</td><td>${esc(s.tag.label)}</td><td>${esc(s.title.label)}</td><td>${esc(s.genderFlag)}</td><td>${s.life.current}</td><td>${s.psyche.current}</td><td>${s.conditions.morale}</td><td>${s.conditions.wounded}</td><td>${s.conditions.sick}</td><td>${s.conditions.ptsd}</td><td>${s.conditions.hostilityDisplayLevel} (${s.conditions.hostilityRaw})</td><td><button data-index="${s.index}">Details</button></td></tr>`).join('')
+    }
+
+    $('search').addEventListener('input', render);
+
+    $('rows').addEventListener('click', e => {
+        const b = e.target.closest('button[data-index]');
+        if (!b || !save) return; $('details').textContent = JSON.stringify(save.getStaffByIndex(Number(b.dataset.index)), null, 2)
+    });
+
+    $('saveFile').addEventListener('change', async () => {
+        const f = $('saveFile').files[0];
+        if (!f) return;
+        if (!VicbossSession.confirmFileReplacement()) {
+            $('saveFile').value = '';
+            return;
+        }
+
+        try {
+            const nextSave = PWSE.open(await f.arrayBuffer(), f.name);
+            save = nextSave;
+            render();
+            document.getElementById("upload-container").style.display = "none";
+            $('save-editor').style.display = "flex";
+
+            window.currentPWSESave = save;
+            PWSEOverviewUI.setSave(save);
+            PWSEStaffUI.setSave(save);
+            PWSECodenameUI.setSave(save);
+            VicbossSession.resetViewForNewSave();
+
+            console.log('PWSE save', save);
+            console.log('PWSE staff', save.staff)
+        } catch (err) {
+            console.error(err);
+            alert(err.message || String(err));
+            $('saveFile').value = '';
+        }
+    });
+
+</script>
+
+</html>

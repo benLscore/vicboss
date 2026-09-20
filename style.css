@@ -1,0 +1,635 @@
+/* Peace Walker font */
+@font-face {
+    font-family: peaceWalker;
+    src: url("fonts/Peace\ Walker.ttf");
+    font-style: normal;
+}
+
+/* Default font */
+@font-face {
+    font-family: "M PLUS 1";
+    src: url("fonts/MPLUS1-Medium.ttf");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+main {
+    border: 2px solid lightgrey;
+    margin: 30px;
+
+    padding: 10px;
+    width: 100%;
+    background-color: white;
+}
+
+h1 {
+    margin: 0 0 10px;
+    font-size: 3rem;
+    font-family: peaceWalker;
+}
+
+body {
+    background-color: whitesmoke;
+    font-family: "M PLUS 1";
+    font-size: 1.2rem;
+    margin: 0;
+
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Ensure list text does not clip out of the screen */
+#upload-container ul li {
+    word-break: break-word;
+}
+
+/* Info tip hover button */
+
+.info-tip {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.info-tip-button {
+    display: grid;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    place-items: center;
+    border: 1px solid black;
+    border-radius: 50%;
+    font: 700 0.75rem/1 sans-serif;
+    cursor: help;
+}
+
+/* Container for the save file upload button */
+fieldset {
+    width: 200px;
+}
+
+/* Legal */
+.disclaimer {
+    margin: 100px 0;
+    max-width: 700px;
+    color: darkslategrey;
+}
+
+/* The actual save editor container */
+#save-editor {
+    max-width: 1000px;
+    margin: 15px auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.save-editor-content {
+    height: 600px;
+    border: 4px solid black;
+    box-shadow: -10px 10px 0 lightgrey;
+    position: relative;
+}
+
+/* Scan lines effect */
+.save-editor-content::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: repeating-linear-gradient(rgba(18, 16, 16, 0) 0px,
+            rgba(18, 16, 16, 0) 1px,
+            rgba(0, 0, 0, 0.05) 1px,
+            rgba(0, 0, 0, 0) 3px);
+    background-size: 100% 4px;
+    z-index: 10;
+    /* Prevents effect from blocking clicks */
+    pointer-events: none;
+}
+
+/* Tabs above the editor content */
+.tabs {
+    max-width: 100%;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.tab {
+    font-family: peaceWalker;
+    font-size: 1.5rem;
+    border: 0;
+    padding: 8px 22px;
+    color: #f4f2e9;
+    background: black;
+
+    /* Trapezium shape */
+    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+}
+
+/* Change tab color and pointer icon when hovered over */
+.tab:hover,
+.tab[aria-selected="true"] {
+    background: #A21D1B;
+    cursor: pointer;
+}
+
+/* Overview category */
+
+#overview {
+    height: 100%;
+    overflow-x: scroll;
+}
+
+/* Main save file details */
+.overview-main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    max-width: 80%;
+    margin: auto;
+    font-size: 1.1rem;
+    height: 120px;
+    border-bottom: 1px solid black;
+}
+
+#overview-profile-name {
+    font-size: 4rem;
+    font-family: peaceWalker;
+    margin: 0;
+    text-align: center;
+}
+
+.overview-main p {
+    margin: 0;
+}
+
+/* Other save file details */
+.overview-secondary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1.2rem;
+    margin: 25px auto;
+    max-width: 700px;
+}
+
+/* Prevents mission names from stretching too far */
+.overview-secondary p {
+    max-width: 400px;
+}
+
+/* Styling for game stats */
+#overview-save-date,
+#overview-save-time,
+#overview-play-time,
+#overview-heroism,
+#overview-camaraderie,
+#overview-gmp,
+#overview-last-mission {
+    font-family: peaceWalker;
+    font-size: 1.7rem;
+}
+
+.overview-export {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 90%;
+    margin: auto;
+}
+
+/* Export button */
+#exportSave {
+    /* Center button */
+    display: block;
+    margin: 0 auto 20px;
+
+    font-family: peaceWalker;
+    font-size: 1.5rem;
+}
+
+/* Staff category */
+
+/* Staff category has a sidebar, so slightly different styling than other categories*/
+#staff {
+    height: 100%;
+    display: flex;
+    /* Display sidebar on the left, content on the right */
+    flex-direction: row;
+}
+
+/* Sidebar containing staff list */
+#staff-sidebar {
+    height: 100%;
+    width: 175px;
+    border-right: 2px solid grey;
+}
+
+/* Top of the sidebar - filter by staff location + name search */
+.staff-sidebar-search {
+    font-size: 1rem;
+    width: 100%;
+
+    /* 120px of 600px height */
+    height: 120px;
+
+    border-bottom: 2px solid black;
+    padding: 5px;
+    /* Padding goes inwards instead of enlarging the container */
+    box-sizing: border-box;
+}
+
+/* Search inputs */
+#staff-sidebar-team,
+#staff-sidebar-name {
+    width: 145px;
+}
+
+/* List of staff members */
+#staff-sidebar-content {
+    overflow-x: scroll;
+    /* 480px of 600px height */
+    /* Search container is 120px, 480 + 120 = 600 so entire height is covered */
+    height: 480px;
+}
+
+.staff-sidebar-staff {
+    width: 100%;
+    min-height: 50px;
+    border: 0;
+    border-bottom: 1px solid black;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-family: peaceWalker;
+}
+
+.staff-sidebar-staff:hover,
+.staff-sidebar-staff.selected {
+    background: white;
+}
+
+/* Staff detail panel */
+#staff-content {
+    width: 100%;
+    padding: 10px;
+    overflow-x: scroll;
+    position: relative;
+}
+
+#staff-content h2 {
+    font-size: 2rem;
+    text-align: center;
+    font-family: peaceWalker;
+}
+
+/* Display an overlay on staff members currently dispatched on OUTER OPS */
+/* For stability reasons, these staff members cannot be edited yet */
+#staff-outerops-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.92);
+    font-family: peaceWalker;
+    font-size: 2rem;
+}
+
+#staff-outerops-overlay small {
+    display: block;
+    margin-top: 15px;
+    font-family: "M PLUS 1";
+    font-size: 1rem;
+}
+
+#staff-name {
+    font-size: 3rem;
+    font-family: peaceWalker;
+    margin: 5px 0;
+}
+
+/* Display details in three groups/columns */
+.staff-main-details {
+    max-width: 95%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Ensure input widths are not too long */
+.staff-main-details p input {
+    width: 60px;
+}
+
+.staff-abilities {
+    display: flex;
+    justify-content: space-between;
+    margin: 25px auto 0;
+    max-width: 90%;
+}
+
+.ability {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+}
+
+/* Display ability inputs as vertical sliders instead of horizontal */
+.ability input[type="range"] {
+    writing-mode: vertical-lr;
+    direction: rtl;
+
+    /* Vertical length and horizontal thickness */
+    inline-size: 10rem;
+    block-size: 1.25rem;
+
+    width: auto;
+    height: auto;
+    margin: 0;
+    flex: none;
+}
+
+.ability p {
+    margin: 0;
+}
+
+/* 3x2 grid */
+.staff-other-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    text-align: center;
+    margin-top: 25px;
+    justify-content: center;
+    align-items: center;
+}
+
+.staff-quote {
+    text-align: center;
+    max-width: 80%;
+    margin: 25px auto 0;
+}
+
+/* 2x2 grid */
+.staff-status {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.staff-status p {
+    margin: 0;
+}
+
+.skill-title {
+    text-align: center;
+}
+
+.staff-skills {
+    max-width: 80%;
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Limit skill dropdowns width and center them */
+.staff-skills select {
+    width: 200px;
+    margin: auto;
+}
+
+.ability input[type="number"] {
+    width: 45px;
+}
+
+/* Codename tracker category */
+
+table {
+    border-collapse: collapse;
+}
+
+td,
+th {
+    border: 1px solid black;
+}
+
+#codename {
+    padding: 0 30px;
+    height: 100%;
+    overflow-x: scroll;
+}
+
+#codename h3 {
+    text-align: center;
+}
+
+.codename-tracker h2 {
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+    margin: 15px 0;
+}
+
+
+.weapons-takedowns {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.takedowns-table {
+    text-align: center;
+}
+
+.takedowns-table th,
+.takedowns-table td {
+    padding: 0 5px;
+}
+
+.codename-ranks {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.codename-next {
+    width: 450px;
+}
+
+.codename-next-table td,
+.codename-next-table th {
+    padding: 5px;
+}
+
+.obtained-codenames {
+    margin: auto;
+    width: 400px;
+    text-align: center;
+}
+
+.foxhound-table {
+    width: 650px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.foxhound-table td {
+    padding: 0 5px;
+}
+
+/* Mobile Styles */
+
+@media (max-width: 768px) {
+
+    main {
+        margin: 10px;
+        font-size: 1rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .save-editor-content {
+        width: 100%;
+    }
+
+    /* Shrink tabs and bring them closer together */
+
+    .tabs {
+        gap: 0;
+    }
+
+    .tab {
+        padding: 0 10px;
+        font-size: 1rem;
+        clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+    }
+
+    /* Overview */
+
+    #overview {
+        text-wrap: wrap;
+    }
+
+    .overview-main {
+        flex-wrap: wrap;
+        height: 100%;
+        padding: 15px 0;
+
+        justify-content: center;
+        gap: 30px;
+    }
+
+    .overview-secondary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        width: 90%;
+    }
+
+    /* Display elements top-to-bottom instead of side-by-side */
+    .overview-export {
+        grid-template-columns: 1fr;
+    }
+
+    /* Staff */
+
+    #staff-sidebar {
+        width: 100px;
+    }
+
+    .staff-sidebar-search {
+        font-size: 0.9rem;
+    }
+
+    #staff-sidebar-team,
+    #staff-sidebar-name {
+        width: 95%;
+    }
+
+    .staff-sidebar-staff {
+        font-size: 1rem;
+    }
+
+    .staff-main-details {
+        flex-wrap: wrap;
+    }
+
+    #staff-name {
+        font-size: 2.5rem;
+        word-break: break-word;
+    }
+
+    .staff-abilities {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* Set range inputs back to horizontal */
+    .ability input[type="range"] {
+        writing-mode: unset;
+        direction: unset;
+    }
+
+    .staff-other-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .staff-skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+
+    }
+
+    .staff-skills select {
+        width: 100px;
+    }
+
+    /* Codenames */
+
+    .weapons-takedowns {
+        margin: 0;
+    }
+
+    /* Allow tables to be scrollable horizontally when there isn't enough space */
+    .table-container {
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .weapons-takedowns,
+    .codename-ranks {
+        flex-wrap: wrap;
+    }
+
+    #codename table {
+        font-size: 0.9rem;
+    }
+
+}
