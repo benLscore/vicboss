@@ -21,6 +21,9 @@ main {
     padding: 10px;
     width: 100%;
     background-color: white;
+
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
 }
 
 h1 {
@@ -259,7 +262,7 @@ fieldset {
 
 /* List of staff members */
 #staff-sidebar-content {
-    overflow-x: scroll;
+    overflow-y: scroll;
     /* 480px of 600px height */
     /* Search container is 120px, 480 + 120 = 600 so entire height is covered */
     height: 480px;
@@ -284,7 +287,7 @@ fieldset {
 #staff-content {
     width: 100%;
     padding: 10px;
-    overflow-x: scroll;
+    overflow-y: scroll;
     position: relative;
 }
 
@@ -438,7 +441,7 @@ th {
 #codename {
     padding: 0 30px;
     height: 100%;
-    overflow-x: scroll;
+    overflow-y: scroll;
 }
 
 #codename h3 {
@@ -619,7 +622,7 @@ th {
 
     /* Allow tables to be scrollable horizontally when there isn't enough space */
     .table-container {
-        overflow-y: auto;
+        overflow-x: auto;
         width: 100%;
     }
 

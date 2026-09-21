@@ -10,6 +10,24 @@ This save editor supports PC save files for the Metal Gear Solid: Master Collect
 
 Vicboss includes staff quotes/descriptions in English, however these will be displayed differently when setting the language to something other than English.
 
+## How to use
+
+To use the editor, you first need to find where your save files are located. Go to Peace Walker on Steam, then click Manage -> Browse Local Files. The file path should look something like:
+
+"SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[your steam ID]\ww"
+
+[your steam ID] will be a random-looking long number. The "\ww" folder will contain all of your save games. There will also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
+
+Before you use the editor, it is very important that you make a backup of your save file folder. Save files could be accidentally deleted / overwritten, the editor could output an invalid save file, etc. Simply make a copy of the "ww" folder somewhere safe before uploading any files to the editor.
+
+Once you've backed up the saves, open Vicboss; you can do this online by going to the website (https://benlscore.github.io/vicboss/), or by downloading the repository and opening "index.html". Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear and you will be able to view the overview, staff editor and codename tracker.
+
+Once you have made all of the changes you want, go to the "Overview" tab and select "Export Save". You will be prompted to download your new save file; set the download location to the save folder "ww". Do not rename the file, or try and overwrite the old save file with the new one; if you rename the save file, it will not work.
+
+Once the new save file has been downloaded into the save folder, check the save selection screen in-game. If you are already on the save selection screen (or the title), it will not appear at first; you can "refresh" the save selection screen by either restarting the game or loading a save file, then exiting out of it and returning to the title screen. You should then see your new save file.
+
+If the save file is invalid for any reason, it will appear as "Corrupted Data". You shouldn't try and manually open the save file with a text or hex editor, as it is encrypted.
+
 ## Features
 
 Vicboss can be accessed via the website, or downloaded for offline use.
@@ -71,24 +89,6 @@ The codenames category displays all the information you need for obtaining diffe
 - What you need to do to get the next codename rank
 - The codenames and codename ranks you have obtained
 - What you need to do to get the four special codenames (FOX, HOUND, DOBERMAN, FOXHOUND)
-
-## How to use
-
-To use the editor, you first need to find where your save files are located. Go to Peace Walker on Steam, then click Manage -> Browse Local Files. The file path should look something like:
-
-"SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[your steam ID]\ww"
-
-[your steam ID] will be a random-looking long number. The "\ww" folder will contain all of your save games. There will also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
-
-Before you use the editor, it is very important that you make a backup of your save file folder. Save files could be accidentally deleted / overwritten, the editor could output an invalid save file, etc. Simply make a copy of the "ww" folder somewhere safe before uploading any files to the editor.
-
-Once you've backed up the saves, open Vicboss; you can do this online by going to the website, or by downloading the repository and opening "index.html". Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear and you will be able to view the overview, staff editor and codename tracker.
-
-Once you have made all of the changes you want, go to the "Overview" tab and select "Export Save". You will be prompted to download your new save file; set the download location to the save folder "ww". Do not rename the file, or try and overwrite the old save file with the new one; if you rename the save file, it will not work.
-
-Once the new save file has been downloaded into the save folder, check the save selection screen in-game. If you are already on the save selection screen (or the title), it will not appear at first; you can "refresh" the save selection screen by either restarting the game or loading a save file, then exiting out of it and returning to the title screen. You should then see your new save file.
-
-If the save file is invalid for any reason, it will appear as "Corrupted Data". You shouldn't try and manually open the save file with a text or hex editor, as it is encrypted.
 
 ## Safety and privacy
 
