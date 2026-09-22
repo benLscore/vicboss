@@ -19,8 +19,9 @@
         <!-- Small container for uploading save files -->
         <fieldset>
             <legend>Upload a save file here</legend>
-            <input id="saveFile" type="file" autocomplete="off">
+            <input id="saveFile" type="file" autocomplete="off" aria-label="Choose a Peace Walker save file">
         </fieldset>
+        <p id="editor-message" role="alert" hidden></p>
 
         <!-- Container that is displayed when the save file has yet to be uploaded -->
         <div id="upload-container">
@@ -180,12 +181,21 @@
 
                         <!-- Most important information (name, life psyche, gmp, morale) -->
                         <div class="staff-main-details">
-                            <p id="staff-name">NAME</p>
+                            <div class="staff-name-editor">
+                                <p id="staff-name">NAME</p>
+                                <input type="text" id="staff-name-input" maxlength="15" autocomplete="off" spellcheck="false" aria-label="Staff name">
+                            </div>
                             <p>LIFE: <input type="number" id="staff-life" value="1234" max="9999"><br>
                                 PSYCHE: <input type="number" id="staff-psyche" value="1234" max="9999"></p>
 
                             <p>GMP: <input type="number" id="staff-gmp" value="1234"><br>
                                 Morale: <input type="number" id="staff-morale" min="0" max="999"></p>
+                        </div>
+
+                        <div class="staff-max-actions" role="group" aria-label="Maximise selected soldier values">
+                            <button type="button" id="staff-max-abilities">Max every ability</button>
+                            <button type="button" id="staff-max-vitals">Max LIFE/PSYCHE</button>
+                            <button type="button" id="staff-max-everything">Max everything</button>
                         </div>
 
                         <h2>Abilities</h2>
@@ -244,21 +254,29 @@
 
                             <p>Gender: <br> <span id="staff-gender"></span></p>
                             <p>Location: <br> <span id="staff-location"></span></p>
-                            <p>Tag: <br> <span id="staff-tag"></span></p>
-                            <p>Portrait ID: <br> <span id="staff-portrait"></span></p>
-                            <p>Title: <br> <span id="staff-title"></span></p>
+                            <p><label for="staff-tag">Tag:</label> <br> <select id="staff-tag"></select></p>
+                            <div class="staff-portrait-view">
+                                <label for="staff-portrait-choice">Portrait:</label> <br>
+                                <select id="staff-portrait-choice"></select>
+                            </div>
+                            <p><label for="staff-title">Title:</label> <br> <select id="staff-title"></select></p>
 
                             <div class="staff-status">
                                 <p>Hostility: <span id="staff-hostility"></span></p>
                                 <p>Sick: <span id="staff-sick"></span></p>
                                 <p>Wounded: <span id="staff-wounded"></span></p>
                                 <p>PTSD: <span id="staff-ptsd"></span></p>
+                                <button type="button" id="staff-clear-statuses" aria-describedby="staff-clear-statuses-help">Clear Statuses</button>
                             </div>
 
                         </div>
 
                         <!-- Staff description (quote) -->
-                        <p class="staff-quote">Quote: <br> "<span id="staff-desc"></span>"</p>
+                        <div class="staff-quote-editor">
+                            <label for="staff-quote-choice">Quote:</label> <br>
+                            <select id="staff-quote-choice" aria-describedby="staff-desc-note"></select>
+                            <p class="staff-quote">"<span id="staff-desc"></span>"</p>
+                        </div>
 
                         <!-- Combat abilities - same as regular abilities -->
 
@@ -535,8 +553,6 @@
         </div>
 
     </main>
-</body>
-
 <script>
 
     // Hide elements that should not immediately be visible
@@ -572,6 +588,8 @@
 <script src="scripts/quotes-en.js"></script>
 
 <script src="scripts/codename-tracker.js"></script>
+<script src="scripts/portrait-options.js"></script>
+<script src="scripts/ability-display.js"></script>
 <script src="scripts/core.js"></script>
 
 <script src="scripts/staff-edit-ui.js"></script>
@@ -583,7 +601,6 @@
     "use strict";
 
     const $ = id => document.getElementById(id);
-    let save = null;
 
     $("saveFile").addEventListener("change", async () => {
         const fileInput = $("saveFile");
@@ -596,24 +613,23 @@
             return;
         }
 
+        fileInput.disabled = true;
         try {
             const nextSave = PWSE.open(
                 await file.arrayBuffer(),
                 file.name
             );
 
-            save = nextSave;
-            window.currentPWSESave = save;
-
             $("upload-container").style.display = "none";
             $("save-editor").style.display = "flex";
 
-            PWSEOverviewUI.setSave(save);
-            PWSEStaffUI.setSave(save);
-            PWSECodenameUI.setSave(save);
+            PWSEOverviewUI.setSave(nextSave);
+            PWSEStaffUI.setSave(nextSave);
+            PWSECodenameUI.setSave(nextSave);
             VicbossSession.resetViewForNewSave();
 
-            console.log("Vicboss save:", save);
+            $("editor-message").textContent = "";
+            $("editor-message").hidden = true;
         } catch (error) {
             console.error(error);
 
@@ -631,9 +647,12 @@
                 alert(message);
             }
 
+        } finally {
+            fileInput.disabled = false;
             fileInput.value = "";
         }
     });
 </script>
 
+</body>
 </html>

@@ -1,8 +1,18 @@
 # Vicboss - Peace Walker Save Editor
 
-Vicboss is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, and track codename progression.
+Vicboss (pronounced v - ick boss) is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, and track codename progression.
 
 The name "Vicboss" comes from "Vic Boss", a nickname given to Big Boss in the story of Peace Walker.
+
+Changelog
+
+v1.1.0
+- Improved staff editor
+    - Added buttons to automatically max out different stats
+    - New ability sliders that display morale boosts and illness debuffs
+    - Staff name is now editable
+    - Tag, Portrait, Title and Quote are now editable
+    - Statuses can now be cleared
 
 ## Compatibility
 
@@ -57,25 +67,25 @@ Staff members that are currently dispatched on OUTER OPS in-game cannot be edite
 
 The staff category has a sidebar on the left-hand side. The top part of the sidebar contains a search feature, where staff members can be filtered by the team in which they are currently located in, and by their name. The bottom part of the sidebar contains a list of staff members matching the critera of your search.
 
-Clicking on a staff member will reveal their details. Each staff member's LIFE, PSYCHE, GMP and Morale can be edited. LIFE and PSYCHE have a maximum value of 9999, GMP has a maximum of 99999, and Morale has a maximum of 999. Any values inputted above these limits will not be accepted by the editor, as the game caps out these values at the same limits.
+Clicking on a staff member will reveal their details. Each staff member's Name, LIFE, PSYCHE, GMP and Morale can be edited. LIFE and PSYCHE have a maximum value of 9999, GMP has a maximum of 99999, and Morale has a maximum of 999. Any values inputted above these limits will not be accepted by the editor, as the game caps out these values at the same limits.
 
-Staff abilities can be altered. Each ability is labeled with it's name and current grade, alongside a vertical slider and number input. Combat ability cannot be directly changed; this is because combat ability is calculated using the staff member's individual Combat Abilities, which are also editable.
+Staff abilities can be altered. Each ability is labeled with it's name and current grade, alongside a vertical slider and number input. The slider displays the base ability value, the boost gained from morale, and debuffs from illnesses. Combat ability cannot be directly changed; this is because combat ability is calculated using the staff member's individual Combat Abilities, which are also editable.
 
 The staff category then displays more details about the staff member, which include:
 
 - Gender
 - Location
 - Tag
-- Portrait ID
+- Portrait
 - Title
 - Statuses
 - Quote (or Description)
 
-None of these values are directly editable. Each portrait / avatar for staff members has not been mapped yet, so representation of the staff portrait is done as a raw ID instead of a picture. 
+Every detail can be edited, except for Gender and Location. This is because Location can easily be changed in-game (and requires logic for ill / hostile soldiers), but Gender is not editable as Portrait and Quote have values exclusive to each gender. Statuses cannot be directly edited; instead a "Clear Statuses" button has been provided that, if the staff member has a value of Hostility / Wounded / Sick / PTSD above 0, all statuses are cleared and the staff member is moved to the Waiting Room.
 
-Each combat ability is directly editable, similar to regular abilities. It is important to note that when editing regular / combat abilities, only the base values are being edited. In-game, abilities are boosted depending on how much morale a staff member has; a staff member who would only usually have an A rank ability could get bumped up to having an S rank in that ability. This is why the letter grade above each slider calculates the grade that ability would be after being boosted by morale, even if the amount it is being boosted by is not visible in the slider.
+Each combat ability is directly editable, similar to regular abilities. It is important to note that when editing regular / combat abilities, only the base values are being edited. The morale boost is calculated from the amount of morale that the soldier has. Also, if the staff member has an illness (Wounded / Sick / PTSD), they are given a debuff, which is also reflected in the ability sliders.
 
-Finally, staff skills can be edited. There are four skill slots, each can be changed to any skill in the game.
+Finally, staff skills can be edited. There are four skill slots; although there is an order that natural soldiers are given skills (left to right, top to bottom), leaving gaps where there should be a skill does not seem to be an issue for the game.
 
 ### Codenames
 
@@ -97,10 +107,8 @@ Vicboss does not use any kind of server or persistant storage; save files are pr
 ## Limitations and upcoming features
 
 - Unique characters (and Hideo) will not appear in the staff editor, as they use special game logic that makes editing them inconsistent
+- Portraits are selected from a labelled dropdown; portrait images are not included
 - Heroism may be directly editable in a future version; this may not be the case for Camaraderie and GMP as they are cumulative values that can't be directly edited
-- The morale boosts for each ability may be viewable in a future version
-- Staff details including portrait, title, statuses and description may be editable in a future version
-- Functionality to max out the abilities of a staff member / max out the abilities of all staff members may be added in a future version
 - More categories, including for viewing/editing weapons, items and insignias, are planned to be implemented in future versions
 
 ## Credits

@@ -20,17 +20,15 @@ function rows(id,data){
 const scalarIds=["codename-outcome-branch","codename-lethal-total","codename-nonlethal-total",
  "codename-dominant-types","codename-solo-candidates","codename-coop-candidates",
  "codename-balanced","codename-balance-summary","codename-heroism","codename-camaraderie",
- "codename-chapter4","codename-rank-confidence","codename-missions-completed",
+ "codename-chapter4","codename-missions-completed",
  "codename-missions-solo","codename-missions-coop","codename-missions-percent","codename-missions-remaining"];
 const tableIds=["codename-counter-rows","codename-owned-rows","codename-progress-rows",
- "codename-guidance-rows","codename-elite-rows","codename-rank-rows"];
+ "codename-elite-rows"];
 function render(){
  const t=save?.codenameTracker;
  if(!t){
-  text("codename-status","No save loaded");
   scalarIds.forEach(id=>text(id,"-"));tableIds.forEach(id=>rows(id,[]));return;
  }
- text("codename-status","Loaded from save - read-only");
  text("codename-outcome-branch",t.outcome.branch==="non-lethal"?"Non-lethal":"Lethal");
  text("codename-lethal-total",number(t.outcome.lethal));
  text("codename-nonlethal-total",number(t.outcome.nonLethal));
@@ -41,7 +39,6 @@ function render(){
  text("codename-camaraderie",number(t.camaraderie));
  text("codename-heroism",number(t.heroism));
  text("codename-chapter4",t.missions.chapter4Complete?"Complete":"Incomplete");
- text("codename-rank-confidence","Camaraderie field verified against live tracker and in-game counter");
  text("codename-missions-solo",number(t.missions.completedSP));
  text("codename-missions-coop",number(t.missions.completedCoop));
  text("codename-missions-completed",`${t.missions.completedSlots} / ${t.missions.requiredSlots}`);
@@ -56,14 +53,9 @@ function render(){
  if(internal?.total)weapons.push([internal.label,"Unclassified",number(internal.lethal),number(internal.nonLethal),number(internal.total)]);
  rows("codename-counter-rows",weapons);
  rows("codename-owned-rows",t.codenames.map(x=>[x.name,x.acquired?stars(x.rank):"-",x.acquired?"Yes":"No"]));
- rows("codename-rank-rows",[]); // Replaced by the combined progress table.
  rows("codename-progress-rows",t.candidateProgress.map(x=>[
   x.mode,x.name,stars(x.storedRank),stars(x.nextRank),
   !x.nextRank?"Highest rank already obtained":x.requirements.join("; ")||"Requirements met - ready to earn in-game"
- ]));
- rows("codename-guidance-rows",t.familyGuidance.map(x=>[
-  `${x.solo} / ${x.coop}`,x.label,x.branch==="non-lethal"?"Non-lethal":"Lethal",
-  x.currentCandidate?"Current candidate":`At least ${number(x.minimumAdditionalTakedowns)} additional takedowns`
  ]));
  text("codename-balanced",t.balance.balanced?"Yes":"No");
  text("codename-balance-summary",t.balance.balanced?"All 11 weapon types are balanced":

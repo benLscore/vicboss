@@ -69,7 +69,11 @@ body {
 
 /* Container for the save file upload button */
 fieldset {
-    width: 200px;
+    width: 400px;
+}
+
+#editor-message {
+    font-size: 1rem;
 }
 
 /* Legal */
@@ -121,13 +125,15 @@ fieldset {
     display: flex;
     flex-direction: row;
     gap: 10px;
+    /* Ensure that tabs do not appear "floating" above the editor border */
+    margin-bottom: -1px;
 }
 
 .tab {
     font-family: peaceWalker;
     font-size: 1.5rem;
     border: 0;
-    padding: 8px 22px;
+    padding: 0 22px;
     color: #f4f2e9;
     background: black;
 
@@ -276,6 +282,7 @@ fieldset {
     cursor: pointer;
     font-size: 1.3rem;
     font-family: peaceWalker;
+    word-break: break-word;
 }
 
 .staff-sidebar-staff:hover,
@@ -325,6 +332,8 @@ fieldset {
     font-size: 3rem;
     font-family: peaceWalker;
     margin: 5px 0;
+    max-width: 400px;
+    word-break: break-word;
 }
 
 /* Display details in three groups/columns */
@@ -340,6 +349,16 @@ fieldset {
 /* Ensure input widths are not too long */
 .staff-main-details p input {
     width: 60px;
+}
+
+.staff-max-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    margin: 20px auto 0;
+    width: fit-content;
 }
 
 .staff-abilities {
@@ -358,20 +377,35 @@ fieldset {
     gap: 10px;
 }
 
-/* Display ability inputs as vertical sliders instead of horizontal */
-.ability input[type="range"] {
+/* Bar sliders for ability inputs */
+
+.ability .ability-bar {
+    position: relative;
+    width: 40px;
+    height: 150px;
+    border: 1px solid rgba(65, 65, 53, .45);
+    background: rgba(65, 65, 53, 1);
+}
+
+.ability .ability-bar input[type="range"] {
+    position: absolute;
+    inset: 0;
     writing-mode: vertical-lr;
     direction: rtl;
-
-    /* Vertical length and horizontal thickness */
-    inline-size: 10rem;
-    block-size: 1.25rem;
-
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    inline-size: 100%;
+    block-size: 100%;
     margin: 0;
-    flex: none;
+    opacity: 0;
+    cursor: ns-resize;
 }
+
+/* Grey out the Combat ability  */
+.ability-bar-readonly {
+    opacity: 0.5;
+}
+
 
 .ability p {
     margin: 0;
@@ -385,6 +419,19 @@ fieldset {
     margin-top: 25px;
     justify-content: center;
     align-items: center;
+}
+
+#staff-portrait-choice {
+    max-width: 190px;
+}
+
+.staff-quote-editor {
+    text-align: center;
+    margin-top: 25px;
+}
+
+#staff-quote-choice {
+    max-width: 300px;
 }
 
 .staff-quote {
@@ -403,6 +450,12 @@ fieldset {
     margin: 0;
 }
 
+.staff-status button {
+    grid-column: span 2;
+    max-width: 150px;
+    margin: 10px auto 0;
+}
+
 .skill-title {
     text-align: center;
 }
@@ -419,12 +472,12 @@ fieldset {
 
 /* Limit skill dropdowns width and center them */
 .staff-skills select {
-    width: 200px;
+    max-width: 200px;
     margin: auto;
 }
 
 .ability input[type="number"] {
-    width: 45px;
+    width: 50px;
 }
 
 /* Codename tracker category */
@@ -459,6 +512,7 @@ th {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    gap: 10px;
 }
 
 .takedowns-table {
@@ -514,8 +568,13 @@ th {
         font-size: 2.5rem;
     }
 
+    #save-editor {
+        max-width: 95%;
+    }
+
     .save-editor-content {
         width: 100%;
+        box-shadow: none;
     }
 
     /* Shrink tabs and bring them closer together */
@@ -591,12 +650,6 @@ th {
         gap: 20px;
     }
 
-    /* Set range inputs back to horizontal */
-    .ability input[type="range"] {
-        writing-mode: unset;
-        direction: unset;
-    }
-
     .staff-other-details {
         display: flex;
         flex-wrap: wrap;
@@ -604,14 +657,12 @@ th {
     }
 
     .staff-skills {
-        display: flex;
-        flex-wrap: wrap;
         gap: 10px;
 
     }
 
     .staff-skills select {
-        width: 100px;
+        max-width: 100px;
     }
 
     /* Codenames */

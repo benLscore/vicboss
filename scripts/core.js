@@ -3,7 +3,7 @@
 (function(global){
 'use strict';
 
-// PWSE Core v1.4 — persistent staff editing + read-only Overview/codename parsers.
+// Vicboss Core — persistent staff editing + read-only Overview/codename parsers.
 // Browser-only. No backend or external libraries.
 
 const FILE_SIZE=0x4F950, MUL=0x02E90EDD;
@@ -182,15 +182,17 @@ function parseStaffRecord(b,index){
  // Stored/base values remain the editable source of truth.
  // Morale-adjusted values are derived live from those bases and are never written
  // back into the stored ability fields.
+ const displayConditions={wounded,sick,ptsd,hostilityRaw};
+ const effectiveAbility=v=>global.PWSEAbilityDisplay?.calculate(v,morale,displayConditions).effective ?? moraleFloor(v,morale);
  const combatDisplayValues={};const combatGrades={};
  for(const [k,v] of Object.entries(combat)){
-  combatDisplayValues[k]=moraleFloor(v,morale);
+  combatDisplayValues[k]=effectiveAbility(v);
   combatGrades[k]=combatGrade(combatDisplayValues[k]);
  }
  const departments=Object.freeze({mess:u16(b,base+O.MESS),medical:u16(b,base+O.MED),rd:u16(b,base+O.RD),intel:u16(b,base+O.INTEL)});
  const departmentDisplayValues={};const departmentGrades={};
  for(const [k,v] of Object.entries(departments)){
-  departmentDisplayValues[k]=moraleFloor(v,morale);
+  departmentDisplayValues[k]=effectiveAbility(v);
   departmentGrades[k]=deptGrade(departmentDisplayValues[k]);
  }
  const sc=[u8(b,base+O.SKILL1),u8(b,base+O.SKILL2),u8(b,base+O.SKILL3),u8(b,base+O.SKILL4)];
@@ -244,16 +246,6 @@ function intInRange(name,value,min,max){
  if(!Number.isInteger(n)||n<min||n>max)throw Error(`${name} must be an integer from ${min} to ${max}`);
  return n;
 }
-function selectorBytes(value){
- if(Array.isArray(value)||value instanceof Uint8Array){
-  if(value.length!==6)throw Error('Description selector must contain exactly 6 bytes');
-  return Array.from(value, v=>intInRange('Description selector byte',v,0,255));
- }
- const h=String(value??'').replace(/\s+/g,'').toUpperCase();
- if(!/^[0-9A-F]{12}$/.test(h))throw Error('Description selector must be 12 hexadecimal characters');
- const out=[];for(let i=0;i<12;i+=2)out.push(parseInt(h.slice(i,i+2),16));return out;
-}
-
 class PeaceWalkerSave{
  constructor(buf,name=''){
   this.originalFilename=name;
@@ -288,8 +280,8 @@ class PeaceWalkerSave{
   if(current.outerOps)throw Error('Staff currently dispatched on OUTER OPS cannot be edited');
 
   if(!patch || typeof patch !== 'object' || Array.isArray(patch))throw Error('Staff patch must be an object');
-  const allowed=new Set(['gmpBase','morale','skills','departments','combatAbilities','lifeCurrent','psycheCurrent']);
-  for(const key of Object.keys(patch))if(!allowed.has(key))throw Error(`${key} is read-only or unsupported in v1`);
+  const allowed=new Set(['gmpBase','morale','skills','departments','combatAbilities','lifeCurrent','psycheCurrent','tagCode','titleCode','clearStatuses','portraitCode','quoteKey','name']);
+  for(const key of Object.keys(patch))if(!allowed.has(key))throw Error(`${key} is read-only or unsupported`);
   if(Object.keys(patch).length===0)return this.getStaffByIndex(index);
   for(const key of ['departments','combatAbilities']){
    if(Object.prototype.hasOwnProperty.call(patch,key) && (!patch[key] || typeof patch[key]!=='object' || Array.isArray(patch[key])))
@@ -298,6 +290,79 @@ class PeaceWalkerSave{
   // Commit only after every field passes validation.
   const draft=new Uint8Array(this._plain);
   const base=STAFF_BASE+index*STAFF_STRIDE;
+
+  if(Object.prototype.hasOwnProperty.call(patch,'name')){
+   if(typeof patch.name!=='string')throw Error('Name must be text');
+   // Preserve existing names byte-for-byte when untouched, including unmapped characters.
+   if(patch.name!==current.name){
+    if(!/^[A-Za-z0-9 -]+$/.test(patch.name))throw Error('Use English letters, numbers, spaces and hyphens for the name');
+    const name=patch.name.trim().toUpperCase();
+    if(name.length<1||name.length>15)throw Error('Name must contain 1–15 characters');
+    if(name==='HIDEO')throw Error('HIDEO is reserved for protected special staff');
+    if(name!==current.name){
+     draft.fill(0,base+O.NAME,base+O.NAME+16);
+     for(let i=0;i<name.length;i++)p8(draft,base+O.NAME+i,name.charCodeAt(i));
+    }
+   }
+  }
+
+  // Existing unmapped/special values may be preserved, but never assigned anew.
+  if(Object.prototype.hasOwnProperty.call(patch,'tagCode')){
+   const code=intInRange('Tag',patch.tagCode,0,255);
+   if(code!==current.tag.code && ![6,7,8].includes(code))
+    throw Error('Choose an ordinary tag: POW, VOL or NML');
+   p8(draft,base+O.TAG,code);
+  }
+  if(Object.prototype.hasOwnProperty.call(patch,'titleCode')){
+   const code=intInRange('Title',patch.titleCode,0,255);
+   const names=global.PWSEStaffLookups?.TITLE_NAMES||TITLE_NAMES;
+   const excluded=global.PWSEStaffLookups?.SPECIAL_ONLY_TITLE_IDS||[0x15,0x16,0x18,0x19,0x1A,0x1B,0x1C,0x57];
+   if(code!==current.title.code && (!Object.prototype.hasOwnProperty.call(names,code)||excluded.includes(code)))
+    throw Error('Choose a mapped ordinary staff title');
+   p8(draft,base+O.TITLE,code);
+  }
+
+  if(Object.prototype.hasOwnProperty.call(patch,'quoteKey')){
+   const seed=u32(draft,base+O.SPEECH);
+   const count=current.genderFlag==='Male'?262:68;
+   const prefix=current.genderFlag==='Male'?'m':'f';
+   const currentKey=prefix+String(seed===0?0:seed%count+1).padStart(3,'0');
+   const key=patch.quoteKey;
+   if(typeof key!=='string')throw Error('Choose a quote from the list');
+   if(key!==currentKey){
+    if(!new RegExp('^'+prefix+'[0-9]{3}$').test(key) ||
+       !Object.prototype.hasOwnProperty.call(global.PWSEQuotes?.ordinary||{},key))
+     throw Error('Choose an ordinary quote matching this soldier’s gender');
+    const index=Number(key.slice(1));
+    if(index<1||index>count)throw Error('Quote is outside the supported English list');
+    // Keep the seed's quotient where possible; zero is the blank-quote sentinel.
+    let next=Math.floor(seed/count)*count+index-1;
+    if(next===0)next=count;
+    if(next>0xffffffff)next-=count;
+    p32(draft,base+O.SPEECH,next);
+   }
+  }
+
+  if(Object.prototype.hasOwnProperty.call(patch,'portraitCode')){
+   const code=intInRange('Portrait',patch.portraitCode,0,0xffffffff);
+   if(code!==current.portraitCode && !(global.VicbossPortraitOptions||[]).some(p=>p.code===code && p.gender===current.genderFlag))
+    throw Error('Choose an observed ordinary portrait matching this soldier’s gender');
+   // Write the complete observed resource value, leaving every other field intact.
+   p32(draft,base+O.PORTRAIT,code);
+  }
+
+  // Explicit recovery action only. Ordinary edits never change status/location.
+  if(Object.prototype.hasOwnProperty.call(patch,'clearStatuses')){
+   if(typeof patch.clearStatuses!=='boolean')throw Error('clearStatuses must be a boolean');
+   if(patch.clearStatuses && [O.SICK,O.WOUNDED,O.PTSD,O.HOSTILITY].some(offset=>u16(draft,base+offset)>0)){
+    for(const offset of [O.SICK,O.WOUNDED,O.PTSD,O.HOSTILITY])p16(draft,base+offset,0);
+    if(current.location.code!==1){
+     p8(draft,base+O.LOCATION,1);
+     p8(draft,base+O.PREV_LOCATION,current.location.code);
+    }
+    // Preserve status flags: tested recovery transfers do not require resetting them.
+   }
+  }
 
   if(Object.prototype.hasOwnProperty.call(patch,'gmpBase'))
    p32(draft,base+O.GMP,intInRange('GMP',patch.gmpBase,0,99999));
@@ -397,7 +462,7 @@ const schema=Object.freeze({
    missionProgress:'Uses the 161 validated mission definition IDs and fixed 295 required mode-slot denominator from tracker v7.'
   })
  }),
- staff:Object.freeze({base:STAFF_BASE,stride:STAFF_STRIDE,capacity:STAFF_CAPACITY,locationNames:LOCATION_NAMES,tagNamesConfirmed:TAG_NAMES,titleNamesFallback:TITLE_NAMES,skillNamesFallback:SKILL_NAMES,notes:Object.freeze({nameEncoding:'Best-effort ASCII only; complete Peace Walker single-byte text mapping is not yet mapped.',tag05:'0x05 is a TRD candidate, not confirmed.',lifeCeiling:'+0x46/+0x4E are ceiling/potential candidates.',previousLocation:'+0x8C is very strongly supported as previous/source location.',medicalDerived:'Medical display formulas are experimentally very strongly supported.',moraleDerived:'Positive morale display multiplier is experimentally very strongly supported.',hostilityDisplay:'UI hostility is experimentally strongly supported as max(1, floor(raw/10)) for raw > 0.',descriptionSelector:'CONFIRMED ordinary quote seed: uint32 little-endian at +0x10. English base preview uses male modulo 262 / female modulo 68. Status/special overrides are not resolved. +0x14..+0x15 remain unknown; entire block is read-only.',phase1Editing:'Phase 1 edits persist directly in one mutable save model across multiple staff. Protected special staff are hidden from the normal sidebar; OUTER OPS staff remain blocked.',combatEditorLimit:'PWSE intentionally limits normal combat-ability editing to 1250 even though larger uint16 values can persist; 1250 is a practical UI limit, not a storage cap.',grades:'Stored/base ability values remain editable. Grade labels and derived display values use the VERY STRONGLY SUPPORTED morale formula; morale-derived values are never written back into the stored ability fields.'})})});
+ staff:Object.freeze({base:STAFF_BASE,stride:STAFF_STRIDE,capacity:STAFF_CAPACITY,locationNames:LOCATION_NAMES,tagNamesConfirmed:TAG_NAMES,titleNamesFallback:TITLE_NAMES,skillNamesFallback:SKILL_NAMES,notes:Object.freeze({nameEncoding:'Best-effort ASCII only; complete Peace Walker single-byte text mapping is not yet mapped.',tag05:'0x05 is a TRD candidate, not confirmed.',lifeCeiling:'+0x46/+0x4E are ceiling/potential candidates.',previousLocation:'+0x8C is very strongly supported as previous/source location.',medicalDerived:'Medical display formulas are experimentally very strongly supported.',moraleDerived:'Positive morale display multiplier is experimentally very strongly supported.',hostilityDisplay:'UI hostility is experimentally strongly supported as max(1, floor(raw/10)) for raw > 0.',descriptionSelector:'CONFIRMED ordinary quote seed: uint32 little-endian at +0x10. English base preview uses male modulo 262 / female modulo 68. Status/special overrides are not resolved. +0x14..+0x15 remain unknown and preserved. Experimental English quote editing changes only the uint32 seed.',phase1Editing:'Phase 1 edits persist directly in one mutable save model across multiple staff. Protected special staff are hidden from the normal sidebar; OUTER OPS staff remain blocked.',combatEditorLimit:'PWSE intentionally limits normal combat-ability editing to 1250 even though larger uint16 values can persist; 1250 is a practical UI limit, not a storage cap.',grades:'Stored/base ability values remain editable. Grade labels and derived display values use the VERY STRONGLY SUPPORTED morale formula; morale-derived values are never written back into the stored ability fields.'})})});
 
 global.PWSE=Object.freeze({
  open:(buf,name='')=>new PeaceWalkerSave(buf,name),

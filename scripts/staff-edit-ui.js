@@ -1,31 +1,13 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
 /*
-PWSE staff editor UI v1.2 — persistent editing + live morale-aware grades (helper hotfix)
+Vicboss staff editor: persistent edits with live ability and GMP displays.
 
-Editable in this phase:
-  - LIFE / PSYCHE current stored values (editor range 0–9999)
-  - GMP (stored/base)
-  - Morale
-  - R&D / Mess Hall / Medical / Intel stored/base primary values
-  - Eight stored/base combat ability values
-
-Display model:
-  - Number inputs/sliders = stored/base values written to the save
-  - Grade labels = morale-adjusted effective values, matching the game's boost model
-  - Hovering a grade/value exposes "Stored/base -> Morale-adjusted" details
-  - data-base-value and data-morale-adjusted-value are attached for a future
-    red-base/orange-morale-extension bar without changing the save model
-  - Four skills remain editable
-  - Title and English base quote preview are read-only
-
-Deliberately still read-only:
-  - Name
-  - Gender, location, tag, portrait
-  - Hostility, Sick, Wounded, PTSD
-  - Overall Combat (derived)
-
-OUTER OPS staff remain fully read-only.
+Editable: name, LIFE, PSYCHE, base GMP, morale, department/combat abilities,
+ordinary tag/title, same-gender portrait/quote, and four skill slots.
+Clear Statuses removes all conditions and transfers affected staff to Waiting Room.
+Gender/location and derived overall Combat remain read-only.
+Protected special staff are hidden; OUTER OPS staff cannot be edited.
 */
 (function (global) {
     "use strict";
@@ -39,6 +21,8 @@ OUTER OPS staff remain fully read-only.
     const $ = id => document.getElementById(id);
 
     const EDITABLE_IDS = Object.freeze([
+        "staff-name-input", "staff-tag", "staff-title", "staff-quote-choice", "staff-portrait-choice",
+        "staff-clear-statuses", "staff-max-abilities", "staff-max-vitals", "staff-max-everything",
         "staff-gmp", "staff-morale", "staff-life", "staff-psyche",
         "staff-rd-slider", "staff-rd-num",
         "staff-messhall-slider", "staff-messhall-num",
@@ -88,17 +72,6 @@ OUTER OPS staff remain fully read-only.
         setValue(`staff-${prefix}-num`, value);
     }
 
-    // VERY STRONGLY SUPPORTED from controlled morale tests:
-    // morale <= 500: no boost
-    // morale > 500: floor(base * (2500 + morale - 500) / 2500)
-    function moraleAdjusted(baseValue, morale) {
-        const base = Number(baseValue);
-        const m = Number(morale);
-        if (!Number.isFinite(base) || !Number.isFinite(m)) return NaN;
-        if (m <= 500) return Math.floor(base);
-        return Math.floor(base * (2500 + (m - 500)) / 2500);
-    }
-
     function combatGrade(value) {
         const v = Number(value);
         if (!Number.isFinite(v) || v < 0) return "?";
@@ -123,13 +96,13 @@ OUTER OPS staff remain fully read-only.
         return "S";
     }
 
-    function combatOverallFromValues(baseValues, morale) {
+    function combatOverallFromValues(baseValues, morale, conditions = currentSoldier()?.conditions || {}) {
         if (!baseValues.length || baseValues.some(v => !Number.isFinite(v))) {
             return { base: null, effective: null, grade: "?" };
         }
 
         const effectiveValues = baseValues.map(
-            v => Math.min(1250, moraleAdjusted(v, morale))
+            v => Math.min(1250, global.PWSEAbilityDisplay.calculate(v, morale, conditions).effective)
         );
         const base = Math.floor(baseValues.reduce((a, b) => a + b, 0) / baseValues.length);
         const effective = Math.floor(
@@ -146,7 +119,7 @@ OUTER OPS staff remain fully read-only.
     function combatOverall(soldier) {
         return combatOverallFromValues(
             Object.values(soldier.combatAbilities),
-            soldier.conditions.morale
+            soldier.conditions.morale, soldier.conditions
         );
     }
 
@@ -163,15 +136,44 @@ OUTER OPS staff remain fully read-only.
         return draftNumber("staff-morale");
     }
 
+    function installAbilityBars() {
+        for (const prefix of [...Object.values(DEPARTMENT_MAP), ...Object.values(COMBAT_MAP), "combat"]) {
+            const slider = $(`staff-${prefix}-slider`);
+            if (!slider || slider.parentElement.classList.contains("ability-bar")) continue;
+            const bar = document.createElement("div");
+            bar.className = "ability-bar";
+            slider.parentNode.insertBefore(bar, slider);
+            bar.appendChild(slider);
+            slider.setAttribute("aria-label", prefix === "combat" ? "Calculated overall combat" : `${prefix} stored base ability`);
+        }
+    }
+
+    function updateAbilityBar(prefix, base, effective, message) {
+        const slider = $(`staff-${prefix}-slider`), bar = slider?.parentElement;
+        if (!slider || !bar?.classList.contains("ability-bar")) return;
+        const max = prefix === "combat" || Object.values(COMBAT_MAP).includes(prefix) ? 1250 : 999;
+        const pct = v => Math.max(0, Math.min(100, v / max * 100));
+        const valid = Number.isFinite(base) && Number.isFinite(effective);
+        const b = valid ? pct(base) : 0, e = valid ? pct(effective) : 0;
+        const solid = Math.min(b, e), top = Math.max(b, e);
+        const colour = e < b ? "#961414" : "#ff5703";
+        bar.style.background = `linear-gradient(to top, #ff1414 0%, #ff1414 ${solid}%, ${colour} ${solid}%, ${colour} ${top}%, rgba(65,65,53,1) ${top}%, rgba(65,65,53,1) 100%)`;
+        bar.title = message;
+        slider.setAttribute("aria-valuetext", message);
+        bar.classList.toggle("ability-bar-readonly", slider.disabled);
+    }
+
     function exposeMoraleDisplay(prefix, base, effective) {
         const gradeEl = $(`staff-${prefix}-grade`);
         const slider = $(`staff-${prefix}-slider`);
         const num = $(`staff-${prefix}-num`);
 
         const valid = Number.isFinite(base) && Number.isFinite(effective);
+        const state = global.PWSEAbilityDisplay.calculate(base, draftMorale(), currentSoldier()?.conditions);
         const message = valid
-            ? `Stored/base: ${base} | Morale-adjusted: ${effective}`
-            : "Enter a valid stored/base value and morale.";
+            ? `Stored/base: ${base} | ${state.estimated ? "Illness-adjusted" : "Effective"}: ${effective}`
+            : "Enter valid base values and morale.";
+        updateAbilityBar(prefix, base, effective, message);
 
         for (const el of [gradeEl, slider, num]) {
             if (!el) continue;
@@ -188,14 +190,14 @@ OUTER OPS staff remain fully read-only.
 
     function refreshDraftDepartmentGrade(prefix) {
         const base = draftNumber(`staff-${prefix}-num`);
-        const effective = moraleAdjusted(base, draftMorale());
+        const effective = global.PWSEAbilityDisplay.calculate(base, draftMorale(), currentSoldier()?.conditions).effective;
         setText(`staff-${prefix}-grade`, departmentGrade(effective));
         exposeMoraleDisplay(prefix, base, effective);
     }
 
     function refreshDraftCombatGrade(prefix) {
         const base = draftNumber(`staff-${prefix}-num`);
-        const effective = moraleAdjusted(base, draftMorale());
+        const effective = global.PWSEAbilityDisplay.calculate(base, draftMorale(), currentSoldier()?.conditions).effective;
         setText(`staff-${prefix}-grade`, combatGrade(effective));
         exposeMoraleDisplay(prefix, base, effective);
     }
@@ -218,8 +220,9 @@ OUTER OPS staff remain fully read-only.
         const num = $("staff-combat-num");
         const message = overall.base === null
             ? "Enter valid combat values and morale."
-            : `Stored/base average: ${overall.base} | Morale-adjusted average: ${overall.effective} (derived)`;
+            : `Stored/base average: ${overall.base} | Effective average: ${overall.effective} (derived)`;
 
+        updateAbilityBar("combat", overall.base, overall.effective, message);
         for (const el of [gradeEl, slider, num]) {
             if (!el) continue;
             el.title = message;
@@ -265,16 +268,39 @@ OUTER OPS staff remain fully read-only.
         }
         el.title = note;
     }
+    function populateOrdinarySelect(id, current, names, excluded = []) {
+        const el = $(id);
+        if (!el) return;
+        if (el.tagName !== "SELECT") {
+            setText(id, current.label);
+            return;
+        }
+        el.replaceChildren();
+        const codes = Object.keys(names).map(Number).filter(code => !excluded.includes(code));
+        if (!codes.includes(current.code)) {
+            option(el, current.code, current.label + " (existing value — keep)");
+        }
+        for (const code of codes.sort((a, b) => a - b)) option(el, code, names[code]);
+        el.value = String(current.code);
+    }
+
     function populateTitleSelect(soldier) {
-        showReadOnly('staff-title', soldier.title.code, soldier.title.label);
+        populateOrdinarySelect("staff-title", soldier.title,
+            global.PWSEStaffLookups?.TITLE_NAMES || {},
+            global.PWSEStaffLookups?.SPECIAL_ONLY_TITLE_IDS ||
+                [0x15, 0x16, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x57]);
+    }
+
+    function readChoiceOrCurrent(id, label, currentCode) {
+        return $(id)?.tagName === "SELECT" ? readInteger(id, label) : currentCode;
     }
 
     function skillLabel(code) {
-        if (code === 0) return "0x00 — None";
+        if (code === 0) return "None";
         const label = global.PWSEStaffLookups?.SKILL_NAMES?.[code];
         return label
-            ? `0x${code.toString(16).toUpperCase().padStart(2, "0")} — ${label}`
-            : `0x${code.toString(16).toUpperCase().padStart(2, "0")} — Unknown`;
+            ? label
+            : "Unknown skill (keep current)";
     }
 
     function populateSkillSelect(selectId, skill) {
@@ -289,7 +315,7 @@ OUTER OPS staff remain fully read-only.
             .filter(code => !specialOnly.has(code))
             .sort((a, b) => a - b);
 
-        option(el, 0, "0x00 — None");
+        option(el, 0, "None");
 
         // Preserve the current value for display even if it is a protected skill.
         if (skill.code !== 0 && !codes.includes(skill.code)) {
@@ -316,9 +342,18 @@ OUTER OPS staff remain fully read-only.
     }
 
     function populateDescriptionSelect(soldier) {
+        const el = $("staff-quote-choice");
+        if (el) {
+            el.replaceChildren();
+            const key = soldier.description?.key;
+            const prefix = soldier.genderFlag === "Male" ? "m" : "f";
+            const choices = Object.entries(global.PWSEQuotes?.ordinary || {}).filter(([k]) => k.startsWith(prefix));
+            if (!choices.some(([k]) => k === key)) option(el, key || "", "Current quote — keep");
+            for (const [k, text] of choices) option(el, k, text);
+            el.value = key || "";
+        }
         showReadOnly('staff-desc', soldier.description?.selectorHex || '',
             descriptionText(soldier), soldier.description?.note || '');
-        setText('staff-desc-note', soldier.description?.note || '');
     }
 
     function ensureRuntimeStyles() {
@@ -399,8 +434,10 @@ OUTER OPS staff remain fully read-only.
     function populateStaff(soldier) {
         if (!soldier) return;
         selectedIndex = soldier.index;
+        if ($("staff-content")) $("staff-content").hidden = false;
 
         setText("staff-name", soldier.name);
+        setValue("staff-name-input", soldier.name);
 
         setValue("staff-life", soldier.life.current);
         setValue("staff-psyche", soldier.psyche.current);
@@ -418,8 +455,15 @@ OUTER OPS staff remain fully read-only.
 
         setText("staff-gender", soldier.genderFlag);
         setText("staff-location", soldier.location.label);
-        setText("staff-portrait", soldier.portraitCode);
-        setText("staff-tag", soldier.tag.label);
+        const portraitSelect = $("staff-portrait-choice");
+        if (portraitSelect) {
+            portraitSelect.replaceChildren();
+            const choices = (global.VicbossPortraitOptions || []).filter(p => p.gender === soldier.genderFlag);
+            if (!choices.some(p => p.code === soldier.portraitCode)) option(portraitSelect, soldier.portraitCode, "Current portrait — keep");
+            for (const p of choices) option(portraitSelect, p.code, p.label.split(" — ")[0]);
+            portraitSelect.value = String(soldier.portraitCode);
+        }
+        populateOrdinarySelect("staff-tag", soldier.tag, {6: "POW", 7: "VOL", 8: "NML"});
 
         populateTitleSelect(soldier);
         populateDescriptionSelect(soldier);
@@ -468,6 +512,8 @@ OUTER OPS staff remain fully read-only.
         });
 
         setEditingState(soldier);
+        if ($("staff-clear-statuses")) $("staff-clear-statuses").disabled = soldier.specialReadOnly || soldier.outerOps || !hasStatuses(soldier);
+        refreshGmpTooltip();
         refreshAllDraftGrades();
         formDirty = false;
         updateExportButton();
@@ -498,6 +544,7 @@ OUTER OPS staff remain fully read-only.
     function readInteger(id, label) {
         const el = $(id);
         if (!el) throw Error(`${label} control is missing`);
+        constrainNumber(el, true);
         const raw = String(el.value).trim();
         if (raw === "") throw Error(`${label} cannot be empty`);
         const n = Number(raw);
@@ -506,7 +553,13 @@ OUTER OPS staff remain fully read-only.
     }
 
     function collectCurrentPatch() {
+        const soldier = currentSoldier();
         return {
+            name: $("staff-name-input")?.value ?? soldier.name,
+            portraitCode: readChoiceOrCurrent("staff-portrait-choice", "Portrait", soldier.portraitCode),
+            quoteKey: $("staff-quote-choice")?.value || soldier.description.key,
+            tagCode: readChoiceOrCurrent("staff-tag", "Tag", soldier.tag.code),
+            titleCode: readChoiceOrCurrent("staff-title", "Title", soldier.title.code),
             lifeCurrent: readInteger("staff-life", "LIFE"),
             psycheCurrent: readInteger("staff-psyche", "PSYCHE"),
             gmpBase: readInteger("staff-gmp", "GMP"),
@@ -552,6 +605,13 @@ OUTER OPS staff remain fully read-only.
 
         try {
             save.updateStaff(soldier.index, collectCurrentPatch());
+            const updated = save.getStaffByIndex(soldier.index);
+            setText("staff-location", updated.location.label);
+            setText("staff-name", updated.name);
+            setValue("staff-name-input", updated.name);
+            document.querySelectorAll(".staff-sidebar-staff").forEach(button => {
+                if (Number(button.dataset.index) === soldier.index) button.textContent = updated.name;
+            });
             formDirty = false;
             updateExportButton();
             return true;
@@ -601,6 +661,7 @@ OUTER OPS staff remain fully read-only.
 
         if (!list.length) {
             selectedIndex = null;
+            if ($("staff-content")) $("staff-content").hidden = true;
             const p = document.createElement("p");
             p.textContent = "No matching staff.";
             p.style.padding = "5px";
@@ -651,13 +712,139 @@ OUTER OPS staff remain fully read-only.
         });
     }
 
+    function hasStatuses(soldier) {
+        return ["sick", "wounded", "ptsd", "hostilityRaw"].some(k => soldier.conditions[k] > 0);
+    }
+
+    function refreshGmpTooltip() {
+        const el = $("staff-gmp"), morale = $("staff-morale");
+        if (!el || !morale) return;
+        const base = Number(el.value), m = Number(morale.value);
+        if (el.value === "" || morale.value === "" || !Number.isInteger(base) || base < 0 || base > 99999 || !Number.isInteger(m) || m < 0 || m > 999) {
+            el.title = "Enter valid GMP and morale values to preview.";
+            return;
+        }
+        const state = global.PWSEAbilityDisplay.calculate(base, m, currentSoldier()?.conditions);
+        const adjusted = Math.min(99999, state.effective);
+        el.title = "Base GMP: " + base.toLocaleString() + "\n" + (state.kind === "medical" ? "Illness-adjusted GMP: " : "Effective GMP: ") + adjusted.toLocaleString();
+    }
+
+    function maximiseSelectedStaff(kind) {
+        const soldier = currentSoldier();
+        if (!soldier || soldier.specialReadOnly || soldier.outerOps) return;
+        if (!["abilities", "vitals", "everything"].includes(kind)) return;
+        // Update the current draft, preserving unrelated pending edits.
+        if (kind === "abilities" || kind === "everything") {
+            for (const prefix of Object.values(DEPARTMENT_MAP)) setRangeAndNumber(prefix, 999);
+            for (const prefix of Object.values(COMBAT_MAP)) setRangeAndNumber(prefix, 1250);
+        }
+        if (kind === "vitals" || kind === "everything") {
+            setValue("staff-life", 9999);
+            setValue("staff-psyche", 9999);
+        }
+        if (kind === "everything") {
+            setValue("staff-gmp", 99999);
+            setValue("staff-morale", 999);
+        }
+        refreshAllDraftGrades();
+        refreshGmpTooltip();
+        markFormDirty();
+    }
+
+    const numericLastValid = new WeakMap();
+
+    function constrainNumber(el, finish = false) {
+        if (!el || el.type !== "number" || el.disabled) return;
+        const min = el.min === "" ? 0 : Number(el.min);
+        const max = el.max === "" ? Number.MAX_SAFE_INTEGER : Number(el.max);
+        const raw = el.value.trim();
+        if (raw === "" && !finish) return;
+        let value = raw === "" ? NaN : Number(raw);
+        if (!Number.isFinite(value)) value = numericLastValid.get(el) ?? min;
+        value = Math.min(max, Math.max(min, Math.trunc(value)));
+        el.value = String(value);
+        numericLastValid.set(el, value);
+    }
+
+    function bindNumericLimits() {
+        for (const id of EDITABLE_IDS) {
+            const el = $(id);
+            if (!el || el.type !== "number") continue;
+            el.step = "1";
+            el.addEventListener("focus", () => {
+                const n = Number(el.value);
+                if (el.value !== "" && Number.isFinite(n)) numericLastValid.set(el, n);
+            });
+            el.addEventListener("beforeinput", event => {
+                if (event.data && /[^0-9]/.test(event.data) && event.inputType === "insertText") event.preventDefault();
+            });
+            // Capture runs before existing listeners update sliders, grades and tooltips.
+            el.addEventListener("input", () => constrainNumber(el), true);
+            el.addEventListener("blur", () => {
+                const before = el.value;
+                constrainNumber(el, true);
+                if (before !== el.value) el.dispatchEvent(new Event("input", {bubbles: true}));
+            });
+        }
+    }
+
     function bindEditors() {
+        $("staff-name-input")?.addEventListener("input", () => {
+            const el = $("staff-name-input");
+            const start = el.selectionStart, end = el.selectionEnd;
+            el.value = el.value.replace(/[a-z]/g, letter => letter.toUpperCase());
+            if (start !== null) el.setSelectionRange(start, end);
+            const soldier = currentSoldier();
+            if (soldier) {
+                const displayName = el.value.trim() || soldier.name;
+                setText("staff-name", displayName);
+                document.querySelectorAll(".staff-sidebar-staff").forEach(button => {
+                    if (Number(button.dataset.index) === soldier.index) button.textContent = displayName;
+                });
+            }
+            markFormDirty();
+        });
+        for (const [id, kind] of [["staff-max-abilities", "abilities"], ["staff-max-vitals", "vitals"], ["staff-max-everything", "everything"]]) {
+            $(id)?.addEventListener("click", () => maximiseSelectedStaff(kind));
+        }
+        $("staff-quote-choice")?.addEventListener("change", () => {
+            const soldier = currentSoldier();
+            if (!soldier) return;
+            const key = $("staff-quote-choice").value;
+            setText("staff-desc", global.PWSEQuotes?.ordinary?.[key] || descriptionText(soldier));
+            markFormDirty();
+        });
+        $("staff-portrait-choice")?.addEventListener("change", markFormDirty);
+        for (const id of ["staff-tag", "staff-title"]) {
+            $(id)?.addEventListener("change", markFormDirty);
+        }
+        $("staff-clear-statuses")?.addEventListener("click", () => {
+            const soldier = currentSoldier();
+            if (!soldier || soldier.specialReadOnly || soldier.outerOps || !hasStatuses(soldier)) return;
+            try {
+                // Commit pending form values and recovery together, or neither on failure.
+                const patch = formDirty ? collectCurrentPatch() : {};
+                save.updateStaff(soldier.index, {...patch, clearStatuses: true});
+                changesSinceExport = true;
+                formDirty = false;
+                const teamFilter = $("staff-sidebar-team");
+                if (teamFilter && teamFilter.value !== "all") teamFilter.value = "1";
+                selectedIndex = soldier.index;
+                renderSidebar({flush: false});
+                updateExportButton();
+            } catch (err) {
+                console.error(err);
+                alert(err.message || String(err));
+            }
+        });
         bindSimpleNumber("staff-gmp");
+        $("staff-gmp")?.addEventListener("input", refreshGmpTooltip);
         bindSimpleNumber("staff-life");
         bindSimpleNumber("staff-psyche");
 
         $("staff-morale")?.addEventListener("input", () => {
             refreshAllDraftGrades();
+            refreshGmpTooltip();
             markFormDirty();
         });
 
@@ -744,9 +931,11 @@ OUTER OPS staff remain fully read-only.
     }
 
     ensureRuntimeStyles();
+    installAbilityBars();
     attachFilters();
-    bindEditors();
     setControlLimits();
+    bindNumericLimits();
+    bindEditors();
     attachExportButton();
 
     global.PWSEStaffUI = Object.freeze({

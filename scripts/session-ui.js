@@ -1,7 +1,7 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
 /*
-Vicboss session UI v0.1
+Vicboss session UI
 
 Keeps browser-restored form/scroll state out of a fresh editor session and
 protects staff changes that have not yet been exported.
@@ -40,12 +40,10 @@ protects staff changes that have not yet been exported.
     function resetRestorableControls() {
         const teamFilter = $("staff-sidebar-team");
         const nameFilter = $("staff-sidebar-name");
-        const debugSearch = $("search");
         const updateLastSaved = $("export-update-last-saved");
 
         if (teamFilter) teamFilter.value = "all";
         if (nameFilter) nameFilter.value = "";
-        if (debugSearch) debugSearch.value = "";
         if (updateLastSaved) {
             updateLastSaved.checked = true;
             updateLastSaved.dispatchEvent(new Event("change"));
