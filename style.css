@@ -70,7 +70,7 @@ body {
 
 /* Container for the save file upload button */
 fieldset {
-    width: 400px;
+    max-width: 400px;
 }
 
 #editor-message {
@@ -432,7 +432,7 @@ fieldset {
 }
 
 #staff-quote-choice {
-    max-width: 300px;
+    width: 400px;
 }
 
 .staff-quote {
@@ -569,6 +569,10 @@ th {
         font-size: 2.5rem;
     }
 
+    #saveFile {
+        width: 100%;
+    }
+
     #save-editor {
         max-width: 95%;
     }
@@ -624,7 +628,7 @@ th {
     }
 
     .staff-sidebar-search {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     #staff-sidebar-team,
@@ -657,13 +661,17 @@ th {
         gap: 20px;
     }
 
+    #staff-quote-choice {
+        width: 90%;
+    }
+
     .staff-skills {
         gap: 10px;
 
     }
 
     .staff-skills select {
-        max-width: 100px;
+        width: 100%;
     }
 
     /* Codenames */
