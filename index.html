@@ -20,7 +20,7 @@
         <fieldset>
             <legend>Upload a save file here</legend>
             <input id="saveFile" type="file" autocomplete="off" aria-label="Choose a Peace Walker save file">
-            <p id="editor-message" role="alert" hidden></p>
+            <p id="error-message" role="alert" hidden></p>
         </fieldset>
         
 
@@ -616,6 +616,9 @@
 
         fileInput.disabled = true;
         try {
+            if (file.size !== PWSE.constants.FILE_SIZE) {
+                throw Error(`Invalid save size: expected ${PWSE.constants.FILE_SIZE} bytes, got ${file.size}`);
+            }
             const nextSave = PWSE.open(
                 await file.arrayBuffer(),
                 file.name
@@ -629,16 +632,18 @@
             PWSECodenameUI.setSave(nextSave);
             VicbossSession.resetViewForNewSave();
 
-            $("editor-message").textContent = "";
-            $("editor-message").hidden = true;
+            $("error-message").textContent = "";
+            $("error-message").hidden = true;
         } catch (error) {
-            console.error(error);
+            console.error("Vicboss could not load the selected file", {
+                filename: file.name,
+                size: file.size,
+                error
+            });
 
-            const message =
-                error.message ||
-                "Vicboss could not open this save file.";
+            const message = "Invalid save file. Please select an encrypted Peace Walker PC save.";
 
-            const messageElement = $("editor-message");
+            const messageElement = $("error-message");
 
             if (messageElement) {
                 messageElement.textContent = message;

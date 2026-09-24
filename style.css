@@ -73,8 +73,9 @@ fieldset {
     max-width: 400px;
 }
 
-#editor-message {
+#error-message {
     font-size: 1rem;
+    color: red;
 }
 
 /* Legal */

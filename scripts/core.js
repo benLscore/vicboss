@@ -258,6 +258,16 @@ class PeaceWalkerSave{
    allCrcsValid:c.main.valid&&c.aux.valid&&c.large.valid&&c.secondary.valid,
    roundTripExact:equal(encrypt(this._plain),this._originalEncrypted)
   });
+  // Reject invalid/decrypted data before any gameplay fields reach the UI.
+  // Encryption round-tripping alone cannot distinguish a valid save from junk.
+  const failed=Object.entries(c).filter(([,report])=>!report.valid);
+  if(failed.length){
+   const details=failed.map(([section,report])=>
+    `${section}: stored 0x${hx(report.stored,8)}, calculated 0x${hx(report.calculated,8)}`
+   ).join('; ');
+   throw Error(`Save checksum validation failed (${details}). Expected an encrypted PC save; the file may be decrypted, corrupted or unsupported.`);
+  }
+  if(!this.validation.roundTripExact)throw Error('Save encryption round-trip validation failed');
   this._dirty=false;
   this._editedStaffIndices=new Set();
   this._refresh();
