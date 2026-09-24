@@ -6,6 +6,12 @@ The name "Vicboss" comes from "Vic Boss", a nickname given to Big Boss in the st
 
 Changelog
 
+v1.1.1
+- Replaced bloated .ttf file with .woff2 file
+- Added functionality where if you clear the name edit field, the name will revert to it's saved value (in case of accidental changes)
+- Improved responsivity
+- Improved upload validation
+
 v1.1.0
 - Improved staff editor
     - Added buttons to automatically max out different stats
