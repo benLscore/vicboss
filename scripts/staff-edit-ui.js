@@ -14,6 +14,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
 
     let save = null;
     let selectedIndex = null;
+    let uploadedNames = new Map();
     let formDirty = false;
     let suppressFormEvents = false;
     let changesSinceExport = false;
@@ -553,6 +554,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     }
 
     function collectCurrentPatch() {
+        restoreBlankName();
         const soldier = currentSoldier();
         return {
             name: $("staff-name-input")?.value ?? soldier.name,
@@ -788,7 +790,22 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         }
     }
 
+    // Keep the upload's name by record index, independently of session edits.
+    function restoreBlankName() {
+        const el = $("staff-name-input");
+        const soldier = currentSoldier();
+        if (!el || el.disabled || !soldier || soldier.specialReadOnly || soldier.outerOps || el.value.trim() !== "") return;
+        const original = uploadedNames.get(soldier.index) ?? soldier.name;
+        el.value = original;
+        setText("staff-name", original);
+        document.querySelectorAll(".staff-sidebar-staff").forEach(button => {
+            if (Number(button.dataset.index) === soldier.index) button.textContent = original;
+        });
+        if (original !== soldier.name) markFormDirty();
+    }
+
     function bindEditors() {
+        $("staff-name-input")?.addEventListener("blur", restoreBlankName);
         $("staff-name-input")?.addEventListener("input", () => {
             const el = $("staff-name-input");
             const start = el.selectionStart, end = el.selectionEnd;
@@ -905,6 +922,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
 
     function setSave(newSave) {
         save = newSave;
+        uploadedNames = new Map((save?.staff || []).map(soldier => [soldier.index, soldier.name]));
         selectedIndex = null;
         formDirty = false;
         changesSinceExport = false;
