@@ -8,7 +8,7 @@
 /* Default font */
 @font-face {
     font-family: "M PLUS 1";
-    src: url("fonts/MPLUS1-Medium.ttf");
+    src: url("fonts/MPLUS1-Medium.woff2");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -22,6 +22,7 @@ main {
     width: 100%;
     background-color: white;
 
+    /* Ensure fonts render consistently across browsers */
     font-synthesis: none;
     text-rendering: geometricPrecision;
 }
