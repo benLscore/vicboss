@@ -17,7 +17,7 @@ protects staff changes that have not yet been exported.
     }
 
     function hasUnexportedChanges() {
-        return Boolean(global.PWSEStaffUI?.hasUnexportedChanges?.());
+        return Boolean(global.PWSEStaffUI?.hasUnexportedChanges?.() || global.VicbossRnDUI?.hasUnexportedChanges?.() || global.VicbossRnDWeaponsUI?.hasUnexportedChanges?.());
     }
 
     function resetScrollPositions() {
@@ -27,7 +27,8 @@ protects staff changes that have not yet been exported.
             "overview",
             "staff-sidebar-content",
             "staff-content",
-            "codename"
+            "codename",
+            "rnd"
         ]) {
             const el = $(id);
             if (el) {

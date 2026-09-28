@@ -1,6 +1,6 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
-/* Derived display only. Medical ability penalties are provisional pending numeric tests. */
+/* Derived display only. */
 (function (global) {
     'use strict';
     function calculate(base, morale, conditions = {}) {

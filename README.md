@@ -1,10 +1,20 @@
 # Vicboss - Peace Walker Save Editor
 
-Vicboss (pronounced v - ick boss) is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, and track codename progression.
+Vicboss (pronounced "vic" as in "victory" - boss) is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, edit Weapons and Items, and track codename progression.
 
 The name "Vicboss" comes from "Vic Boss", a nickname given to Big Boss in the story of Peace Walker.
 
 Changelog
+
+v1.2.0
+- Added R&D category
+    - Set development status for weapons and items
+    - Edit stock level for applicable weapons and items
+    - Edit usage level for weapons
+    - Instantly develop weapons and items that are currently in development
+    - Buttons to unlock all weapons / items, set every stock level to max, and set every usage level to max
+- Fixed bug where staff members that have been discharged still appear in the staff editor. This affected discharged staff members in save files that had not completed any missions between the staff member being discharged and the game being saved.
+- Added metatags for the web version
 
 v1.1.1
 - Replaced bloated .ttf file with .woff2 file
@@ -24,7 +34,7 @@ v1.1.0
 
 This save editor supports PC save files for the Metal Gear Solid: Master Collection Vol. 2 version of Metal Gear Solid: Peace Walker. It does not support save files from console releases of the Master Collection Vol. 2, nor does it support save files from the HD Collection on PS3 or Xbox 360 or the original PSP game.
 
-Vicboss includes staff quotes/descriptions in English, however these will be displayed differently when setting the language to something other than English.
+Vicboss includes staff quotes/descriptions in English, however does not reflect how the quotes appear in-game when setting the language to something other than English. The same goes for other assets such as Location and Title.
 
 ## How to use
 
@@ -32,23 +42,23 @@ To use the editor, you first need to find where your save files are located. Go 
 
 "SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[your steam ID]\ww"
 
-[your steam ID] will be a random-looking long number. The "\ww" folder will contain all of your save games. There will also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
+[your steam ID] will be a random-looking long number. The "ww" folder will contain all of your save games. There will also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
 
 Before you use the editor, it is very important that you make a backup of your save file folder. Save files could be accidentally deleted / overwritten, the editor could output an invalid save file, etc. Simply make a copy of the "ww" folder somewhere safe before uploading any files to the editor.
 
-Once you've backed up the saves, open Vicboss; you can do this online by going to the website (https://benlscore.github.io/vicboss/), or by downloading the repository and opening "index.html". Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear and you will be able to view the overview, staff editor and codename tracker.
+Once you've backed up the saves, open Vicboss; you can do this online by going to the website (https://benlscore.github.io/vicboss/) which I recommend doing so that you are always accessing the most up-to-date version. You can also download the repository and open "index.html". Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear. The tabs at the top of the save editor will allow you to edit different parts of your save file.
 
 Once you have made all of the changes you want, go to the "Overview" tab and select "Export Save". You will be prompted to download your new save file; set the download location to the save folder "ww". Do not rename the file, or try and overwrite the old save file with the new one; if you rename the save file, it will not work.
 
-Once the new save file has been downloaded into the save folder, check the save selection screen in-game. If you are already on the save selection screen (or the title), it will not appear at first; you can "refresh" the save selection screen by either restarting the game or loading a save file, then exiting out of it and returning to the title screen. You should then see your new save file.
+Once the new save file has been downloaded into the save folder, check the save selection screen in-game. If you are already on the save selection screen (or the title screen), it will not appear at first; you can "refresh" the save selection screen by either restarting the game or loading a save file, then exiting out of it and returning to the title screen. You should then see your new save file.
 
 If the save file is invalid for any reason, it will appear as "Corrupted Data". You shouldn't try and manually open the save file with a text or hex editor, as it is encrypted.
 
 ## Features
 
-Vicboss can be accessed via the website, or downloaded for offline use.
+Vicboss can be accessed via the website (recommended), or downloaded for offline use.
 
-The save editor is split into three categories:
+The save editor is split into multiple categories:
 
 ### Overview
 
@@ -93,6 +103,12 @@ Each combat ability is directly editable, similar to regular abilities. It is im
 
 Finally, staff skills can be edited. There are four skill slots; although there is an order that natural soldiers are given skills (left to right, top to bottom), leaving gaps where there should be a skill does not seem to be an issue for the game.
 
+### R&D
+
+The R&D category lets you edit information relating to your Mother Base's R&D department. R&D is currently split into two; Weapons and Items.
+
+Every weapon in the game is displayed, split into five ranks. Weapons can be filtered by category (Handguns, Shotguns, etc.) and each category includes a percentage amount of weapons developed. You can edit the development status of each, the usage level (choose from LVL 1, 2 or 3), and the Stock level (for weapons that have a stock level). Item editing is similar; you can edit the development status, and stock level of each. Some items can only have a stock level of 1, for example the Binoculars and the Surround Indicator. Since ranks are usually dependent on the previous rank, and can also be dependent on other weapons, the editor does not allow for weapons/items to be "undeveloped" if another rank depends on it, since this is not possible in-game. There are also buttons to make 100% completion easier; both weapons and items have a Develop All and Max Inventory Level feature, and Weapons has a Max Usage Level feature.
+
 ### Codenames
 
 The codenames category displays all the information you need for obtaining different codenames in the game. 
@@ -115,7 +131,7 @@ Vicboss does not use any kind of server or persistant storage; save files are pr
 - Unique characters (and Hideo) will not appear in the staff editor, as they use special game logic that makes editing them inconsistent
 - Portraits are selected from a labelled dropdown; portrait images are not included
 - Heroism may be directly editable in a future version; this may not be the case for Camaraderie and GMP as they are cumulative values that can't be directly edited
-- More categories, including for viewing/editing weapons, items and insignias, are planned to be implemented in future versions
+- More categories, e.g. for viewing/editing insignias, are planned to be implemented in future versions
 
 ## Credits
 

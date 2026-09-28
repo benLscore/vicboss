@@ -4,7 +4,6 @@
 'use strict';
 
 // Vicboss Core — persistent staff editing + read-only Overview/codename parsers.
-// Browser-only. No backend or external libraries.
 
 const FILE_SIZE=0x4F950, MUL=0x02E90EDD;
 const B1H=0x0,B1=0x40,B1SZ=0x387F0,B2H=0x38830,B2=0x38870,B2SZ=0xF0E0;
@@ -51,6 +50,19 @@ function crc32(b,o,n){let c=0xFFFFFFFF;for(let i=o;i<o+n;i++)c=(CT[(c^b[i])&255]
 function calcCrcs(b){return {main:crc32(b,MAIN,MAIN_SZ),aux:crc32(b,AUX,AUX_SZ),large:crc32(b,LARGE,LARGE_SZ),secondary:crc32(b,SEC,SEC_SZ)}}
 function storedCrcs(b){return {main:u32(b,CRC_M),aux:u32(b,CRC_A),large:u32(b,CRC_L),secondary:u32(b,CRC_S)}}
 function repairCrcs(b){const c=calcCrcs(b);p32(b,CRC_M,c.main);p32(b,CRC_A,c.aux);p32(b,CRC_L,c.large);p32(b,CRC_S,c.secondary);return c}
+// Additional internal consistency words, separate from the four CRCs.
+// Formula cross-checked against original PC saves; R&D edits change +0x170.
+function internalChecks(b){
+ const signedByteSum=(start,end)=>{let sum=0;for(let i=start;i<end;i++)sum+=(b[i]<<24)>>24;return sum>>>0};
+ let shortSum=0;for(let i=0;i<7;i++)shortSum+=(u16(b,0x14104+i*2)<<16)>>16;
+ return [
+  (u32(b,SLOT)^0xE4)>>>0,
+  (u32(b,0x160)^u32(b,0x164)^0x3F)>>>0,
+  (signedByteSum(0xBD7C,0xE2FC)^signedByteSum(0xE2FC,0x1127C)^0x7C)>>>0,
+  (shortSum^0xCD)>>>0
+ ];
+}
+function repairInternalChecks(b){internalChecks(b).forEach((value,i)=>p32(b,0x168+i*4,value))}
 function crcReport(b){const s=storedCrcs(b),c=calcCrcs(b),r={};for(const k of ['main','aux','large','secondary'])r[k]={stored:s[k],calculated:c[k],valid:s[k]===c[k]};return r}
 function equal(a,b){if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true}
 function xor16(b){let x=0xFFFF;for(let i=0;i<b.length;i+=2)x^=u16(b,i);return x&0xFFFF}
@@ -235,7 +247,9 @@ function parseStaffRecord(b,index){
   experimentalRaw:Object.freeze({unknown32:u8(b,base+O.U32),archetype33Candidate:u8(b,base+O.ARCHETYPE),unknown36:u16(b,base+O.U36),unknown78:u16(b,base+O.U78),unknown84:u16(b,base+O.U84),unknown86:u16(b,base+O.U86),messSecondary:u16(b,base+O.MESS2),medicalSecondary:u16(b,base+O.MED2),rdSecondary:u16(b,base+O.RD2),intelSecondary:u16(b,base+O.INTEL2)})
  });
 }
-function parseStaff(b){const a=[];for(let i=0;i<STAFF_CAPACITY;i++){const s=parseStaffRecord(b,i);if(s)a.push(s)}return Object.freeze(a)}
+// Status bit 0x02 marks a pending discharge: hide the retained record until
+// the game compacts the roster after a mission. Do not clear or rewrite it.
+function parseStaff(b){const a=[];for(let i=0;i<STAFF_CAPACITY;i++){const s=parseStaffRecord(b,i);if(s&&!s.dismissalRelatedFlag)a.push(s)}return Object.freeze(a)}
 
 
 const EDITABLE_DEPARTMENT_OFFSETS=Object.freeze({mess:O.MESS,medical:O.MED,rd:O.RD,intel:O.INTEL});
@@ -270,15 +284,90 @@ class PeaceWalkerSave{
   if(!this.validation.roundTripExact)throw Error('Save encryption round-trip validation failed');
   this._dirty=false;
   this._editedStaffIndices=new Set();
+  this._editedItemIds=new Set();
+  this._editedWeaponIds=new Set();
   this._refresh();
  }
  _refresh(){
   this.overview=parseOverview(this._plain);
+  this.rndItems=global.VicbossRnDItems?.parse(this._plain)||null;
+  this.rndWeapons=global.VicbossRnDWeapons?.parse(this._plain)||null;
   this.staff=parseStaff(this._plain);
   this.codenameTracker=global.PWSECodenameTracker?.parse(this._plain)||null;
  }
  get isDirty(){return this._dirty}
  get editedStaffIndices(){return Object.freeze(Array.from(this._editedStaffIndices).sort((a,b)=>a-b))}
+ get editedItemIds(){return Object.freeze(Array.from(this._editedItemIds).sort((a,b)=>a-b))}
+ get editedWeaponIds(){return Object.freeze(Array.from(this._editedWeaponIds).sort((a,b)=>a-b))}
+ bulkRnD(section, action){
+  if(!['weapons','items'].includes(section)||!['develop','stock','usage'].includes(action)||(section==='items'&&action==='usage'))throw Error('Invalid bulk R&D action');
+  const api=section==='weapons'?global.VicbossRnDWeapons:global.VicbossRnDItems;
+  if(!api)throw Error('R&D editing unavailable');
+  let draft=new Uint8Array(this._plain);
+  const entries=api.parse(draft).flatMap(g=>g.entries);
+  if(entries.some(e=>!e.available))throw Error('Some R&D records are unavailable; no changes were applied');
+  for(const entry of entries){
+   if(action==='develop'){
+    if(section==='items'&&entry.fixedStock&&entry.state===3){
+     draft=api.edit(draft,entry.id,{stock:1});
+     continue;
+    }
+    if(entry.startingEquipment||entry.readOnly||entry.state===3)continue;
+    draft=api.edit(draft,entry.id,{developed:true});
+   }else if(action==='stock'){
+    if(entry.state!==3||(section==='weapons'&&!entry.showStock))continue;
+    draft=api.edit(draft,entry.id,{stock:entry.fixedStock?1:api.maxStock});
+   }else{
+    if(entry.state!==3)continue;
+    draft=api.edit(draft,entry.id,{usageLevel:3});
+   }
+  }
+  if(equal(draft,this._plain))return 0;
+  const changed=[];
+  for(const entry of entries){
+   const offset=section==='weapons'?0xBD80+(entry.id-1)*0x1C:0xE2E8+entry.id*0x18;
+   const stride=section==='weapons'?0x1C:0x18;
+   if(!equal(draft.subarray(offset,offset+stride),this._plain.subarray(offset,offset+stride)))changed.push(entry.id);
+  }
+  const edited=section==='weapons'?this._editedWeaponIds:this._editedItemIds;
+  changed.forEach(id=>edited.add(id));
+  this._plain=draft;this._dirty=true;this._refresh();
+  return changed.length;
+ }
+ planWeaponDevelopment(id,developed){
+  if(!global.VicbossRnDWeapons)throw Error('Weapon editing is not available');
+  return global.VicbossRnDWeapons.developmentPlan(this._plain,id,developed);
+ }
+ updateWeapon(id,patch){
+  if(!global.VicbossRnDWeapons)throw Error('Weapon editing is not available');
+  const draft=global.VicbossRnDWeapons.edit(this._plain,id,patch);
+  if(equal(draft,this._plain))return this.rndWeapons;
+  for(const group of this.rndWeapons)for(const entry of group.entries){
+   const o=0xBD80+(entry.id-1)*0x1C;
+   if(!equal(draft.subarray(o,o+0x1C),this._plain.subarray(o,o+0x1C)))this._editedWeaponIds.add(entry.id);
+  }
+  this._plain=draft;
+  this._dirty=true;
+  this._refresh();
+  return this.rndWeapons;
+ }
+ planItemDevelopment(id,developed){
+  if(!global.VicbossRnDItems)throw Error('Item editing is not available');
+  return global.VicbossRnDItems.developmentPlan(this._plain,id,developed);
+ }
+ updateItem(id,patch){
+  if(!global.VicbossRnDItems)throw Error('Item editing is not available');
+  const draft=global.VicbossRnDItems.edit(this._plain,id,patch);
+  if(equal(draft,this._plain))return this.rndItems;
+  for(const group of this.rndItems)for(const entry of group.entries){
+   const o=0xE2E8+entry.id*0x18;
+   if(!equal(draft.subarray(o,o+0x18),this._plain.subarray(o,o+0x18)))this._editedItemIds.add(entry.id);
+  }
+  this._plain=draft;
+  this._dirty=true;
+  this._refresh();
+  return this.rndItems;
+ }
  getStaffByName(name){const q=String(name).toUpperCase();return this.staff.filter(s=>s.name.toUpperCase()===q)}
  getStaffByIndex(index){return this.staff.find(s=>s.index===Number(index))||null}
 
@@ -286,6 +375,7 @@ class PeaceWalkerSave{
   index=intInRange('Staff index',index,0,STAFF_CAPACITY-1);
   const current=parseStaffRecord(this._plain,index);
   if(!current)throw Error(`Staff record ${index} is empty`);
+  if(current.dismissalRelatedFlag)throw Error('Discharged staff cannot be edited');
   if(current.specialReadOnly)throw Error(`${current.name} is protected special staff and cannot be edited`);
   if(current.outerOps)throw Error('Staff currently dispatched on OUTER OPS cannot be edited');
 
@@ -307,7 +397,7 @@ class PeaceWalkerSave{
    if(patch.name!==current.name){
     if(!/^[A-Za-z0-9 -]+$/.test(patch.name))throw Error('Use English letters, numbers, spaces and hyphens for the name');
     const name=patch.name.trim().toUpperCase();
-    if(name.length<1||name.length>15)throw Error('Name must contain 1–15 characters');
+    if(name.length<1||name.length>15)throw Error('Name must contain 1-15 characters');
     if(name==='HIDEO')throw Error('HIDEO is reserved for protected special staff');
     if(name!==current.name){
      draft.fill(0,base+O.NAME,base+O.NAME+16);
@@ -424,6 +514,8 @@ class PeaceWalkerSave{
   this._plain=decrypt(this._originalEncrypted);
   this._dirty=false;
   this._editedStaffIndices.clear();
+  this._editedItemIds.clear();
+  this._editedWeaponIds.clear();
   this._refresh();
  }
 
@@ -432,6 +524,7 @@ class PeaceWalkerSave{
   const p=new Uint8Array(this._plain);
   const updateLastSaved=options.updateLastSaved===true;
   const exportedLastSaved=updateLastSaved?writeSavedAt(p,options.now??new Date()):null;
+  repairInternalChecks(p);
   repairCrcs(p);
   const enc=encrypt(p);
   const check=crcReport(decrypt(enc));
@@ -442,7 +535,11 @@ class PeaceWalkerSave{
    filename:outName(enc,slot,this.originalFilename),
    slot,
    edited:this._dirty||updateLastSaved,
-   staffEdited:this._dirty,
+   staffEdited:this._editedStaffIndices.size>0,
+   weaponsEdited:this._editedWeaponIds.size>0,
+   editedWeaponIds:this.editedWeaponIds,
+   itemsEdited:this._editedItemIds.size>0,
+   editedItemIds:this.editedItemIds,
    lastSavedUpdated:updateLastSaved,
    exportedLastSaved,
    editedStaffIndices:this.editedStaffIndices

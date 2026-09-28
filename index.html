@@ -4,11 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vicboss - Peace Walker Save Editor</title>
     <link rel="stylesheet" href="style.css">
     <!-- Preload fonts -->
     <link rel="preload" href="fonts/Peace Walker.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
     <link rel="preload" href="fonts/MPLUS1-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+
+    <title>Vicboss - Peace Walker Save Editor</title>
+
+    <meta name="description"
+        content="Vicboss is a free online save editor for Metal Gear Solid: Peace Walker - Master Collection Vol. 2 on PC. Edit staff, weapons and items, and track codenames.">
+
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Vicboss">
+    <meta property="og:title" content="Vicboss - Peace Walker Save Editor">
+    <meta property="og:description"
+        content="Edit staff, develop weapons and items, and track codename progress with Vicboss, a free online Peace Walker save editor for PC.">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Vicboss - Peace Walker Save Editor">
+    <meta name="twitter:description"
+        content="A free online save editor for Peace Walker - Master Collection Vol. 2 on PC. Edit staff, weapons and items, and track codenames.">
+
+    <link rel="canonical" href="https://benlscore.github.io/vicboss/">
+    <meta property="og:url" content="https://benlscore.github.io/vicboss/">
+
 </head>
 
 <body>
@@ -22,7 +43,7 @@
             <input id="saveFile" type="file" autocomplete="off" aria-label="Choose a Peace Walker save file">
             <p id="error-message" role="alert" hidden></p>
         </fieldset>
-        
+
 
         <!-- Container that is displayed when the save file has yet to be uploaded -->
         <div id="upload-container">
@@ -64,11 +85,51 @@
             <div class="tabs">
                 <button class="tab" onclick="show('overview')">OVERVIEW</button>
                 <button class="tab" onclick="show('staff')">STAFF</button>
+                <button class="tab" onclick="show('rnd')">R&amp;D</button>
                 <button class="tab" onclick="show('codename')">CODENAMES</button>
             </div>
 
             <!-- Main content -->
             <div class="save-editor-content">
+
+                <!-- R&D editor -->
+                <div id="rnd" style="display: none;">
+                    <h2>R&amp;D</h2>
+                    <div class="rnd-tabs" role="tablist" aria-label="R&amp;D sections">
+                        <button type="button" id="rnd-tab-weapons" role="tab" data-rnd-tab="weapons"
+                            aria-controls="rnd-weapons" aria-selected="true">Weapons</button>
+                        <button type="button" id="rnd-tab-items" role="tab" data-rnd-tab="items"
+                            aria-controls="rnd-items" aria-selected="false" tabindex="-1">Items</button>
+                        <!-- <button type="button" id="rnd-tab-other" role="tab" data-rnd-tab="other" aria-controls="rnd-other" aria-selected="false" tabindex="-1">Other</button> -->
+                    </div>
+                    <div id="rnd-weapons" role="tabpanel" aria-labelledby="rnd-tab-weapons" data-rnd-panel="weapons">
+                        <p id="rnd-weapons-summary">No save loaded</p>
+                        <div class="rnd-bulk-actions">
+                            <button type="button" data-rnd-bulk="weapons" data-action="develop" disabled>Develop All
+                                Weapons</button>
+                            <button type="button" data-rnd-bulk="weapons" data-action="stock" disabled>Max Inventory
+                                Level</button>
+                            <button type="button" data-rnd-bulk="weapons" data-action="usage" disabled>Max Usage
+                                Level</button>
+                        </div>
+                        <label for="rnd-weapon-category">Category:</label>
+                        <select id="rnd-weapon-category">
+                            <option value="all">All categories</option>
+                        </select>
+                        <div id="rnd-weapon-categories"></div>
+                    </div>
+                    <div id="rnd-items" role="tabpanel" aria-labelledby="rnd-tab-items" data-rnd-panel="items" hidden>
+                        <p id="rnd-items-summary">No save loaded</p>
+                        <div class="rnd-bulk-actions">
+                            <button type="button" data-rnd-bulk="items" data-action="develop" disabled>Develop All
+                                Items</button>
+                            <button type="button" data-rnd-bulk="items" data-action="stock" disabled>Max Inventory
+                                Level</button>
+                        </div>
+                        <div id="rnd-item-categories"></div>
+                    </div>
+                    <!-- <div id="rnd-other" role="tabpanel" aria-labelledby="rnd-tab-other" data-rnd-panel="other" hidden><p>The Other view is not available yet.</p></div> -->
+                </div>
 
                 <!-- Overview tab -->
                 <div id="overview">
@@ -184,7 +245,8 @@
                         <div class="staff-main-details">
                             <div class="staff-name-editor">
                                 <p id="staff-name">NAME</p>
-                                <input type="text" id="staff-name-input" maxlength="15" autocomplete="off" spellcheck="false" aria-label="Staff name">
+                                <input type="text" id="staff-name-input" maxlength="15" autocomplete="off"
+                                    spellcheck="false" aria-label="Staff name">
                             </div>
                             <p>LIFE: <input type="number" id="staff-life" value="1234" max="9999"><br>
                                 PSYCHE: <input type="number" id="staff-psyche" value="1234" max="9999"></p>
@@ -267,7 +329,8 @@
                                 <p>Sick: <span id="staff-sick"></span></p>
                                 <p>Wounded: <span id="staff-wounded"></span></p>
                                 <p>PTSD: <span id="staff-ptsd"></span></p>
-                                <button type="button" id="staff-clear-statuses" aria-describedby="staff-clear-statuses-help">Clear Statuses</button>
+                                <button type="button" id="staff-clear-statuses"
+                                    aria-describedby="staff-clear-statuses-help">Clear Statuses</button>
                             </div>
 
                         </div>
@@ -554,111 +617,120 @@
         </div>
 
     </main>
-<script>
+    <script>
 
-    // Hide elements that should not immediately be visible
-    document.getElementById("save-editor").style = "display: none;";
-    document.getElementById("staff").style = "display: none;";
-    document.getElementById("codename").style = "display: none;";
-
-    // Function to display the selected category
-
-    function show(tab) {
-
-        // Hide all categories
-        document.getElementById("overview").style = "display: none;";
+        // Hide elements that should not immediately be visible
+        document.getElementById("save-editor").style = "display: none;";
         document.getElementById("staff").style = "display: none;";
         document.getElementById("codename").style = "display: none;";
 
-        // Display the selected category
-        if (tab === "staff") {
-            // Staff category is displayed using flex instead of block
-            document.getElementById(tab).style = "display: flex;";
-        } else {
-            document.getElementById(tab).style = "display: block;";
-        }
+        // Function to display the selected category
 
-    }
+        function show(tab) {
 
-</script>
+            document.getElementById("rnd").style.display = "none";
 
-<!-- Save file decryption scripts -->
+            // Hide all categories
+            document.getElementById("overview").style = "display: none;";
+            document.getElementById("staff").style = "display: none;";
+            document.getElementById("codename").style = "display: none;";
 
-<script src="scripts/mission-lookups.js"></script>
-<script src="scripts/staff-lookups.js"></script>
-<script src="scripts/quotes-en.js"></script>
-
-<script src="scripts/codename-tracker.js"></script>
-<script src="scripts/portrait-options.js"></script>
-<script src="scripts/ability-display.js"></script>
-<script src="scripts/core.js"></script>
-
-<script src="scripts/staff-edit-ui.js"></script>
-<script src="scripts/overview-ui.js"></script>
-<script src="scripts/codename-ui.js"></script>
-<script src="scripts/session-ui.js"></script>
-
-<script>
-    "use strict";
-
-    const $ = id => document.getElementById(id);
-
-    $("saveFile").addEventListener("change", async () => {
-        const fileInput = $("saveFile");
-        const file = fileInput.files[0];
-
-        if (!file) return;
-
-        if (!VicbossSession.confirmFileReplacement()) {
-            fileInput.value = "";
-            return;
-        }
-
-        fileInput.disabled = true;
-        try {
-            if (file.size !== PWSE.constants.FILE_SIZE) {
-                throw Error(`Invalid save size: expected ${PWSE.constants.FILE_SIZE} bytes, got ${file.size}`);
-            }
-            const nextSave = PWSE.open(
-                await file.arrayBuffer(),
-                file.name
-            );
-
-            $("upload-container").style.display = "none";
-            $("save-editor").style.display = "flex";
-
-            PWSEOverviewUI.setSave(nextSave);
-            PWSEStaffUI.setSave(nextSave);
-            PWSECodenameUI.setSave(nextSave);
-            VicbossSession.resetViewForNewSave();
-
-            $("error-message").textContent = "";
-            $("error-message").hidden = true;
-        } catch (error) {
-            console.error("Vicboss could not load the selected file", {
-                filename: file.name,
-                size: file.size,
-                error
-            });
-
-            const message = "Invalid save file. Please select an encrypted Peace Walker PC save.";
-
-            const messageElement = $("error-message");
-
-            if (messageElement) {
-                messageElement.textContent = message;
-                messageElement.dataset.type = "error";
-                messageElement.hidden = false;
+            // Display the selected category
+            if (tab === "staff") {
+                // Staff category is displayed using flex instead of block
+                document.getElementById(tab).style = "display: flex;";
             } else {
-                alert(message);
+                document.getElementById(tab).style = "display: block;";
             }
 
-        } finally {
-            fileInput.disabled = false;
-            fileInput.value = "";
         }
-    });
-</script>
+
+    </script>
+
+    <!-- Save file decryption scripts -->
+
+    <script src="scripts/mission-lookups.js"></script>
+    <script src="scripts/staff-lookups.js"></script>
+    <script src="scripts/quotes-en.js"></script>
+
+    <script src="scripts/codename-tracker.js"></script>
+    <script src="scripts/portrait-options.js"></script>
+    <script src="scripts/ability-display.js"></script>
+    <script src="scripts/rnd-items.js"></script>
+    <script src="scripts/rnd-weapons.js"></script>
+    <script src="scripts/core.js"></script>
+
+    <script src="scripts/staff-edit-ui.js"></script>
+    <script src="scripts/overview-ui.js"></script>
+    <script src="scripts/codename-ui.js"></script>
+    <script src="scripts/rnd-ui.js"></script>
+    <script src="scripts/rnd-weapons-ui.js"></script>
+    <script src="scripts/session-ui.js"></script>
+
+    <script>
+        "use strict";
+
+        const $ = id => document.getElementById(id);
+
+        $("saveFile").addEventListener("change", async () => {
+            const fileInput = $("saveFile");
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            if (!VicbossSession.confirmFileReplacement()) {
+                fileInput.value = "";
+                return;
+            }
+
+            fileInput.disabled = true;
+            try {
+                if (file.size !== PWSE.constants.FILE_SIZE) {
+                    throw Error(`Invalid save size: expected ${PWSE.constants.FILE_SIZE} bytes, got ${file.size}`);
+                }
+                const nextSave = PWSE.open(
+                    await file.arrayBuffer(),
+                    file.name
+                );
+
+                $("upload-container").style.display = "none";
+                $("save-editor").style.display = "flex";
+
+                PWSEOverviewUI.setSave(nextSave);
+                PWSEStaffUI.setSave(nextSave);
+                PWSECodenameUI.setSave(nextSave);
+                VicbossRnDUI.setSave(nextSave);
+                VicbossRnDWeaponsUI.setSave(nextSave);
+                VicbossSession.resetViewForNewSave();
+
+                $("error-message").textContent = "";
+                $("error-message").hidden = true;
+            } catch (error) {
+                console.error("Vicboss could not load the selected file", {
+                    filename: file.name,
+                    size: file.size,
+                    error
+                });
+
+                const message = "Invalid save file. Please select an encrypted Peace Walker PC save.";
+
+                const messageElement = $("error-message");
+
+                if (messageElement) {
+                    messageElement.textContent = message;
+                    messageElement.dataset.type = "error";
+                    messageElement.hidden = false;
+                } else {
+                    alert(message);
+                }
+
+            } finally {
+                fileInput.disabled = false;
+                fileInput.value = "";
+            }
+        });
+    </script>
 
 </body>
+
 </html>

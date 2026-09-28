@@ -887,6 +887,8 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     function downloadExport() {
         if (!save) throw Error("No save loaded");
         if (!flushCurrentForm()) throw Error("Fix the current staff values before exporting");
+        global.VicbossRnDUI?.flushPendingEdits?.();
+        global.VicbossRnDWeaponsUI?.flushPendingEdits?.();
 
         const built = save.buildExport({
             updateLastSaved: $("export-update-last-saved")?.checked ?? true
@@ -901,6 +903,8 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         changesSinceExport = false;
+        global.VicbossRnDUI?.markExported?.();
+        global.VicbossRnDWeaponsUI?.markExported?.();
         return built;
     }
 
@@ -955,6 +959,9 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     bindNumericLimits();
     bindEditors();
     attachExportButton();
+
+    global.addEventListener('vicboss:items-changed', updateExportButton);
+    global.addEventListener('vicboss:weapons-changed', updateExportButton);
 
     global.PWSEStaffUI = Object.freeze({
         setSave,

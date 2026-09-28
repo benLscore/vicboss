@@ -557,6 +557,139 @@ th {
     padding: 0 5px;
 }
 
+
+/* RnD */
+
+#rnd {
+    height: 100%;
+    overflow: auto;
+    padding: 0 30px;
+    box-sizing: border-box;
+}
+
+#rnd h2 {
+    margin: 15px 0;
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+}
+
+.rnd-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.rnd-tabs button {
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: peaceWalker;
+    font-size: 1.5rem;
+}
+
+.rnd-tabs button[aria-selected="true"] {
+    background: #161616;
+    color: #f4f2e9;
+}
+
+.rnd-bulk-actions {
+    margin-bottom: 30px;
+}
+
+/* Weapons */
+
+#rnd-weapon-category {
+    font-size: 1.1rem;
+    margin: 0 0 12px 8px;
+    max-width: 100%;
+}
+
+/* Table styling */
+
+.rnd-table-scroll {
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.rnd-rank-table {
+    width: 100%;
+    min-width: 880px;
+    table-layout: fixed;
+    font-size: 0.85rem;
+}
+
+.rnd-rank-table caption {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.rnd-rank-table th,
+.rnd-rank-table td {
+    padding: 8px;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.rnd-rank-table thead {
+    background: #e8e8e8;
+}
+
+.rnd-rank-table th[scope="row"] {
+    text-align: left;
+}
+
+.rnd-item-card p {
+    margin: 6px 0;
+}
+
+.rnd-developed-label,
+.rnd-stock-label {
+    display: block;
+    margin: 8px 0;
+}
+
+.rnd-stock-label input {
+    width: 100%;
+    max-width: 7em;
+    box-sizing: border-box;
+    font: inherit;
+}
+
+.rnd-item-card button {
+    font: inherit;
+    margin: 6px 0;
+}
+
+.rnd-item-note {
+    font-size: 0.9em;
+}
+
+.rnd-edit-error {
+    color: #a02020;
+}
+
+.rnd-item-card progress {
+    width: 100%;
+    height: 8px;
+}
+
+.rnd-item-state {
+    font-weight: bold;
+}
+
+#rnd [hidden] {
+    display: none !important;
+}
+
+.rnd-weapon-card p {
+    margin: 6px 0;
+}
+
+.rnd-weapon-card progress {
+    width: 100%;
+    height: 8px;
+}
+
+
 /* Mobile Styles */
 
 @media (max-width: 768px) {

@@ -1,28 +1,10 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
 /*
-PWSE Staff Lookup Tables v0.4 — gender-aware descriptions + special staff/title/skill exclusions
-Generated from:
-  - staff.xlsx supplied by the user
-  - STW000000685f01 supplied by the user
-
-This file intentionally separates:
-  * workbook-observed mappings
-  * externally/supplementally identified mappings
-  * ambiguous description rows
-
-Description structure:
-  record +0x10..+0x15 = six-byte speech/description selector block
-
-Observed in this dataset:
-  titles mapped: 29
-  workbook-mapped nonzero skills: 35
-  unambiguous selector->quote observations: 339
-  distinct quote texts: 228
-  ambiguous rows skipped: 10
-
-Do not interpret the six-byte selector as a sequential numeric quote ID.
-Multiple different selectors can produce the same displayed quote.
+Staff titles and confirmed skill names, plus legacy description fallback data.
+Current ordinary quote previews use PWSEQuotes.preview(seed, gender).
+The selector tables below remain available as parser fallbacks; they are not
+an exhaustive quote catalogue. Status/special-character overrides are separate.
 */
 
 (function (global) {
@@ -60,7 +42,7 @@ Multiple different selectors can produce the same displayed quote.
         0x57: "Game Designer"
     });
 
-    const SKILL_NAMES_OBSERVED = Object.freeze({
+    const SKILL_NAMES = Object.freeze({
         0x01: "Sidekick",
         0x02: "Radio Technology",
         0x03: "SWAT",
@@ -81,6 +63,7 @@ Multiple different selectors can produce the same displayed quote.
         0x19: "Surgeon",
         0x1B: "Gunsmith (Handguns)",
         0x1C: "Gunsmith (Shotguns)",
+        0x1D: "Gunsmith (Assault Rifles)",
         0x1E: "Gunsmith (Machine Guns)",
         0x23: "Bipedal Weapons Design",
         0x27: "Gung Ho",
@@ -98,16 +81,6 @@ Multiple different selectors can produce the same displayed quote.
         0x36: "Metamaterials Technology"
     });
 
-    // Not filled in by the workbook; retained separately so provenance remains clear.
-    const SKILL_NAMES_SUPPLEMENTAL = Object.freeze({
-        0x1D: "Gunsmith (Assault Rifles)"
-    });
-
-    const SKILL_NAMES = Object.freeze({
-        ...SKILL_NAMES_OBSERVED,
-        ...SKILL_NAMES_SUPPLEMENTAL
-    });
-
     // Titles observed only on protected unique staff/Hideo in the mapped roster.
     // They remain known for parsing/display, but ordinary staff cannot select them.
     const SPECIAL_ONLY_TITLE_IDS = Object.freeze([0x15, 0x16, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x57]);
@@ -117,7 +90,7 @@ Multiple different selectors can produce the same displayed quote.
     // offered as editable choices for ordinary staff.
     const SPECIAL_ONLY_SKILL_IDS = Object.freeze([0x23, 0x2B, 0x2C, 0x2E, 0x2F]);
 
-    // All unambiguous selectors actually present in the user's mapped save.
+    // All unambiguous selectors actually present in the save.
     // Useful for displaying the current description of an existing staff record.
     const DESCRIPTION_BY_SELECTOR = Object.freeze({
         "020CAAAF29B9": "The bacon in the mess hall was extra crispy this morning. I feel like I can do anything today.",
@@ -1039,21 +1012,6 @@ Multiple different selectors can produce the same displayed quote.
         Object.freeze({ text: "You? A sneaking master?! Are you kidding me? \nI can smell the gunpowder on you a mile away!", selectorHex: "92B8EFB0FFB8", selector: Object.freeze([0x92, 0xB8, 0xEF, 0xB0, 0xFF, 0xB8]), gender: "Male", specialOnly: false, exampleIndex: 148, exampleName: "NEWT", observedSelectorCount: 2 })
     ]);
 
-    // These were intentionally left unresolved because duplicate-name pairs
-    // could not be distinguished in-game.
-    const AMBIGUOUS_DESCRIPTION_ROWS = Object.freeze([
-        Object.freeze({ index: 250, name: "BEAR", selectorHex: "8A7262CA14B9" }),
-        Object.freeze({ index: 302, name: "BEAR", selectorHex: "EECBF98077B9" }),
-        Object.freeze({ index: 39, name: "ERMINE", selectorHex: "73FF18BCECB8" }),
-        Object.freeze({ index: 40, name: "ERMINE", selectorHex: "958136BCECB8" }),
-        Object.freeze({ index: 90, name: "JELLYFISH", selectorHex: "309D354EF1B8" }),
-        Object.freeze({ index: 110, name: "JELLYFISH", selectorHex: "3951420CF3B8" }),
-        Object.freeze({ index: 51, name: "LINNET", selectorHex: "CE6977FDEEB8" }),
-        Object.freeze({ index: 140, name: "LINNET", selectorHex: "052880EDFDB8" }),
-        Object.freeze({ index: 159, name: "TOPI", selectorHex: "0FF42B4302B9" }),
-        Object.freeze({ index: 224, name: "TOPI", selectorHex: "B1DCD5C108B9" })
-    ]);
-
     function selectorHex(bytes) {
         return Array.from(bytes)
             .map(v => Number(v).toString(16).toUpperCase().padStart(2, "0"))
@@ -1068,13 +1026,10 @@ Multiple different selectors can produce the same displayed quote.
         TITLE_NAMES,
         SPECIAL_ONLY_TITLE_IDS,
         SKILL_NAMES,
-        SKILL_NAMES_OBSERVED,
-        SKILL_NAMES_SUPPLEMENTAL,
         SPECIAL_ONLY_SKILL_IDS,
         DESCRIPTION_BY_SELECTOR,
         DESCRIPTION_GENDER_BY_SELECTOR,
         DESCRIPTION_CHOICES,
-        AMBIGUOUS_DESCRIPTION_ROWS,
         selectorHex,
         descriptionFromSelector
     });

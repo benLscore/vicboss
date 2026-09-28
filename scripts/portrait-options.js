@@ -1,6 +1,6 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
-// Observed ordinary-staff portrait/gender pairs from supplied saves; no artwork.
+// Observed ordinary-staff portrait/gender pairs.
 window.VicbossPortraitOptions = Object.freeze([
   {
     "code": 13847706,
