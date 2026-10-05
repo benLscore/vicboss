@@ -81,6 +81,41 @@ an exhaustive quote catalogue. Status/special-character overrides are separate.
         0x36: "Metamaterials Technology"
     });
 
+    // Descriptions transcribed from the game by the user; preserve wording and line breaks.
+    const SKILL_DESCRIPTIONS = Object.freeze({
+        0x01: "Effect on Missions\n\n- Compliments allies when they neutralize enemies.\n- PSYCHE rises for the soldier who was complimented.\n- Be aware that players cannot achieve an S rank with the use of a Battle Cry.",
+        0x02: "Effect on Missions\n\n- Chance of neutralizing enemy requests for backup increases.\n- Effects are amplified in proportion to number of people with this skill.\n- Support Rank is increased when requesting support from Mother Base.",
+        0x03: "Effect on Missions\n\n- Increases damage dealt by CQC.\n- Increases damage when firing at enemy's hands or feet.\n- Allows player to take down enemy soldiers by rolling.\n- Shortens time required to sync with allies.\n- Effectiveness of all actions excluding Rolling and Snake Sync are amplified in proportion to number of people with same skill.",
+        0x04: "Effect on Mother Base\n\n- When part of the Medical Team, Sickbay staff's recovery speed increases.\n\nEffect on Missions\n\n- Increases running speed for a set time when allies are near death.\n- Decreases button presses required for CPR to save allies.\n- LIFE gauge recovers more than usual when saving allies with CPR.",
+        0x05: "Effect on Missions\n\n- Easily targeted by enemies.\n- When targetted by enemies, PSYCHE and defense increase.\n- Using a shield has the same guard effect as Snake Formation.",
+        0x06: "Effect on Missions\n\n- Raises the chance of increasing damage against large-scale weapons and mechs.\n- Speed of placing objects becomes faster.",
+        0x08: "Effect on Missions\n\n- Location of all items and prisoners is displayed on detailed map.",
+        0x09: "Effect on Missions\n\n- Increases effect of some Battle Cries.",
+        0x0C: "Effect on Missions\n\n- Increases damage dealt by CQC.\n- Raises the chance to increase damage when firing weapons.\n- Increases natural recovery rate of LIFE gauge.\n- Effects are amplified in proportion to number of people with this skill.",
+        0x0E: "Effects on Missions\n\n- Increases damage dealt by CQC.\n- Defeating a soldier with CQC will force him to drop all of his items.\n- Defense rises when the player's PSYCHE is damaged.\n- Recovery from unconsciousness is faster.\n- Snake Syncing becomes faster when syncing with another teammate with the same skill.\n- Increases effect of some Battle Cries.",
+        0x10: "Effect on Mother Base\n\n- When part of the Mess Hall Team, Rank 3 Rations can be developed.",
+        0x11: "Effect on Mother Base\n\n- When part of the Mess Hall Team, Rank 4 Rations can be developed.",
+        0x12: "Effect on Mother Base\n\n- When part of the Mess Hall Team, Rank 5 Rations can be developed.",
+        0x13: "Effect on Mother Base\n\n- When part of the Medical Team, increases Sickbay staff's sickness and wounds treatment speed.\n\nEffect on Missions\n\n- Increases natural recovery rate of LIFE gauge.",
+        0x14: "Effect on Mother Base\n\n- When part of the Medical Team, increases Sickbay staff's sickness and wounds treatment speed.\n\nEffect on Missions\n\n- Increases natural recovery rate of LIFE gauge.",
+        0x16: "Effect on Mother Base\n\n- When part of the Medical Team, increases Sickbay staff's PTSD treatment speed.",
+        0x18: "Effect on Mother Base\n\n- When part of the Medical Team, increases Sickbay staff's sickness treatment speed.",
+        0x19: "Effect on Mother Base\n\n- When part of the Medical Team, increases Sickbay staff's wound treatment speed.\n\nEffect on Missions\n\n- Increases natural recovery rate of LIFE gauge.",
+        0x1B: "Effect on Mother Base\n\n- When part of the R&D Team, lowers GMP required to develop handguns.",
+        0x1C: "Effect on Mother Base\n\n- When part of the R&D Team, lowers GMP required to develop shotguns.",
+        0x1D: "Effect on Mother Base\n\n- When part of the R&D Team, lowers GMP required to develop assault rifles.",
+        0x1E: "Effect on Mother Base\n\n- When part of the R&D Team, lowers GMP required to develop machine guns.",
+        0x27: "Effect on Missions\n\n- Increases natural recovery rate of PSYCHE gauge.\n- Increases effect of some Battle Cries.",
+        0x2A: "Effect on Mother Base\n\n- When part of the R&D Team, weapons with laser sights can be developed.",
+        0x2D: "Effect on Missions\n\n- Tracking enemy soldiers in center of screen while using Binoculars will have the same effect as Enemy Search.",
+        0x31: "Effect on Mother Base\n\n- When part of the R&D Team, Patriot can be developed.",
+        0x32: "Effect on Mother Base\n\n- When part of the R&D Team, Tanegashima Musket can be developed.",
+        0x33: "Effect on Mother Base\n\n- When part of the R&D Team, PTRD1941 and PTRS1941 can be developed.",
+        0x34: "Effect on Mother Base\n\n- When part of the R&D Team, M134 Gatling Gun can be developed.",
+        0x35: "Effect on Mother Base\n\n- When part of the R&D Team, EM Wave Gun, Electromagnetic Net, and Railgun can be developed.",
+        0x36: "Effect on Mother Base\n\n- When part of the R&D Team, Stealth Mat and Stealth Camo can be developed."
+    });
+
     // Titles observed only on protected unique staff/Hideo in the mapped roster.
     // They remain known for parsing/display, but ordinary staff cannot select them.
     const SPECIAL_ONLY_TITLE_IDS = Object.freeze([0x15, 0x16, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x57]);
@@ -1026,6 +1061,7 @@ an exhaustive quote catalogue. Status/special-character overrides are separate.
         TITLE_NAMES,
         SPECIAL_ONLY_TITLE_IDS,
         SKILL_NAMES,
+        SKILL_DESCRIPTIONS,
         SPECIAL_ONLY_SKILL_IDS,
         DESCRIPTION_BY_SELECTOR,
         DESCRIPTION_GENDER_BY_SELECTOR,

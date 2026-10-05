@@ -17,7 +17,7 @@ function rows(id,data){
   body.appendChild(tr);
  }
 }
-const scalarIds=["codename-outcome-branch","codename-lethal-total","codename-nonlethal-total",
+const scalarIds=["codename-grenade-launcher-kills","codename-outcome-branch","codename-lethal-total","codename-nonlethal-total",
  "codename-dominant-types","codename-solo-candidates","codename-coop-candidates",
  "codename-balanced","codename-balance-summary","codename-heroism","codename-camaraderie",
  "codename-chapter4","codename-missions-completed",
@@ -31,6 +31,7 @@ function render(){
  }
  text("codename-outcome-branch",t.outcome.branch==="non-lethal"?"Non-lethal":"Lethal");
  text("codename-lethal-total",number(t.outcome.lethal));
+ text("codename-grenade-launcher-kills",number(t.grenadeLauncherKills));
  text("codename-nonlethal-total",number(t.outcome.nonLethal));
  text("codename-dominant-types",t.candidates.dominantWeaponTypes.map(key=>t.weaponTypes.find(x=>x.key===key)?.label||key).join(", "));
  for(const [mode,id] of [["Solo","codename-solo-candidates"],["CO-OPS","codename-coop-candidates"]]){
@@ -70,5 +71,7 @@ function render(){
  }));
 }
 function setSave(next){save=next||null;render();}
-global.PWSECodenameUI=Object.freeze({setSave,render});
+function createCheckpoint(){const previous=save;return ()=>{save=previous;};}
+
+global.PWSECodenameUI=Object.freeze({createCheckpoint,setSave,render});
 })(window);

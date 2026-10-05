@@ -1,0 +1,97 @@
+/* Peace Walker font */
+@font-face {
+    font-family: peaceWalker;
+    src: url("../fonts/Peace Walker.ttf") format("truetype");
+    font-style: normal;
+}
+
+/* Default font */
+@font-face {
+    font-family: "M PLUS 1";
+    src: url("../fonts/MPLUS1-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    margin: 0;
+
+    font-family: "M PLUS 1";
+    font-size: 1.2rem;
+}
+
+main {
+    max-width: 1100px;
+    /* min-height: 90vh; */
+    margin: auto;
+    padding: 5px 20px;
+
+    background-color: rgb(255, 255, 231);
+    border-left: 2px solid lightgrey;
+    border-right: 2px solid lightgrey;
+
+}
+
+h1 {
+    font-family: peaceWalker;
+    font-size: 3rem;
+}
+
+/* Table of contents */
+
+.contents {
+    max-width: 800px;
+    height: fit-content;
+
+    margin: 20px auto;
+    padding: 1px 0;
+
+    background-color: white;
+}
+
+.contents a {
+    color: black;
+    text-decoration: none;
+}
+
+.contents a:hover {
+    text-decoration: underline;
+}
+
+/* Links for the Database main page */
+
+.database-links {
+    display: flex;
+    flex-direction: column;
+
+    font-family: peaceWalker;
+    font-size: 2rem;
+
+}
+
+.database-links a {
+    width: 100%;
+    min-height: 70px;
+    border-top: 1px solid black;
+
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+}
+
+.database-links a:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Figures */
+
+figure {
+    width: 80%;
+    margin: 30px auto;
+}
+
+figure img {
+    width: 100%;
+}

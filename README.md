@@ -6,6 +6,11 @@ The name "Vicboss" comes from "Vic Boss", a nickname given to Big Boss in the st
 
 Changelog
 
+v1.2.1
+- Added Database, a collection of informational pages for Vicboss and Peace Walker
+- Added Grenade Launcher kill counter
+- Added descriptions for skills
+
 v1.2.0
 - Added R&D category
     - Set development status for weapons and items
@@ -38,15 +43,17 @@ Vicboss includes staff quotes/descriptions in English, however does not reflect 
 
 ## How to use
 
+I highly recommend that you use the online version of Vicboss (https://benlscore.github.io/vicboss/). If you want to use the offline version, you can download the latest release from GitHub, or by downloading it from Nexus. If you use the offline version, the custom fonts may not load; this can be fixed by running Vicboss on a local server, e.g. a Python HTTP server.
+
 To use the editor, you first need to find where your save files are located. Go to Peace Walker on Steam, then click Manage -> Browse Local Files. The file path should look something like:
 
-"SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[your steam ID]\ww"
+> "SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[your steam ID]\ww"
 
-[your steam ID] will be a random-looking long number. The "ww" folder will contain all of your save games. There will also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
+[your steam ID] will be a random-looking long number. The "ww" folder will contain all of your save games. There may also be a file named "EU_SYSTEM.DAT", however this can be ignored. Every save file will be named something like "STW000000xxxxxx", with the "x"s replaced by numbers and letters. If you have multiple save files and can't tell which one is which, have a look at the "Date modified" value of the file; it should match the date shown in the save file selection screen in-game.
 
 Before you use the editor, it is very important that you make a backup of your save file folder. Save files could be accidentally deleted / overwritten, the editor could output an invalid save file, etc. Simply make a copy of the "ww" folder somewhere safe before uploading any files to the editor.
 
-Once you've backed up the saves, open Vicboss; you can do this online by going to the website (https://benlscore.github.io/vicboss/) which I recommend doing so that you are always accessing the most up-to-date version. You can also download the repository and open "index.html". Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear. The tabs at the top of the save editor will allow you to edit different parts of your save file.
+Once you've backed up the saves, open Vicboss. Upload your save file using the input in the top-left, and if everything goes correctly, the save editor container will appear. The tabs at the top of the save editor will allow you to edit different parts of your save file.
 
 Once you have made all of the changes you want, go to the "Overview" tab and select "Export Save". You will be prompted to download your new save file; set the download location to the save folder "ww". Do not rename the file, or try and overwrite the old save file with the new one; if you rename the save file, it will not work.
 
@@ -101,7 +108,7 @@ Every detail can be edited, except for Gender and Location. This is because Loca
 
 Each combat ability is directly editable, similar to regular abilities. It is important to note that when editing regular / combat abilities, only the base values are being edited. The morale boost is calculated from the amount of morale that the soldier has. Also, if the staff member has an illness (Wounded / Sick / PTSD), they are given a debuff, which is also reflected in the ability sliders.
 
-Finally, staff skills can be edited. There are four skill slots; although there is an order that natural soldiers are given skills (left to right, top to bottom), leaving gaps where there should be a skill does not seem to be an issue for the game.
+Finally, staff skills can be edited. There are four skill slots; although there is an order that natural soldiers are given skills (left to right, top to bottom), leaving gaps where there should be a skill does not seem to be an issue for the game. Hover over skills to see their in-game descriptions.
 
 ### R&D
 
@@ -122,6 +129,10 @@ The codenames category displays all the information you need for obtaining diffe
 - The codenames and codename ranks you have obtained
 - What you need to do to get the four special codenames (FOX, HOUND, DOBERMAN, FOXHOUND)
 
+### Database
+
+Database is a collection of informational pages, which holds information about Vicboss and guides for Peace Walker. This can be accessed at the top-left of the editor. It currently includes guides for beating mech fights, beating AI Weapon fights, and getting the true ending / what to do in the postgame.
+
 ## Safety and privacy
 
 Vicboss does not use any kind of server or persistant storage; save files are processed locally in the browser. This remains true for both the website version and the offline version. Editing save files may cause data corruption or unexpected behaviour; always back up your saves before using the editor.
@@ -137,4 +148,7 @@ Vicboss does not use any kind of server or persistant storage; save files are pr
 
 The custom Peace Walker font was created by gleeson: https://gleeson.itch.io/peace-walker-font-pack
 
-This codename guide verified essentially all of my testing, and was extremely helpful: https://gamefaqs.gamespot.com/boards/960566-metal-gear-solid-peace-walker/56113639
+This codename guide was extremely helpful when developing the codename tracker: https://gamefaqs.gamespot.com/boards/960566-metal-gear-solid-peace-walker/56113639
+
+The Peace Walker Field Guide is an amazing resource that a lot of Database is based on: https://mgspw.pages.dev/
+

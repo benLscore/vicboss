@@ -304,6 +304,18 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             : "Unknown skill (keep current)";
     }
 
+    function skillTooltip(code) {
+        if (code === 0) return "No skill assigned.";
+        const description = global.PWSEStaffLookups?.SKILL_DESCRIPTIONS?.[code];
+        return skillLabel(code) + "\n\n" + (description || "Description not yet available.");
+    }
+
+    function refreshSkillTooltip(el) {
+        if (!el) return;
+        el.title = skillTooltip(Number(el.value));
+        el.setAttribute("aria-description", el.title);
+    }
+
     function populateSkillSelect(selectId, skill) {
         const el = $(selectId);
         if (!el) return;
@@ -327,7 +339,9 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             option(el, code, skillLabel(code));
         }
 
+        for (const choice of el.options) choice.title = skillTooltip(Number(choice.value));
         el.value = String(skill.code);
+        refreshSkillTooltip(el);
     }
 
     function descriptionText(soldier) {
@@ -869,7 +883,10 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         for (const prefix of Object.values(COMBAT_MAP)) bindPair(prefix, "combat");
 
         for (let i = 1; i <= 4; i++) {
-            $(`staff-skill-${i}`)?.addEventListener("change", markFormDirty);
+            $(`staff-skill-${i}`)?.addEventListener("change", event => {
+                refreshSkillTooltip(event.currentTarget);
+                markFormDirty();
+            });
         }
     }
 
@@ -941,15 +958,14 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         renderSidebar({ flush: false });
         updateExportButton();
 
-        requestAnimationFrame(() => {
-            for (const id of ["staff-sidebar-content", "staff-content"]) {
-                const el = $(id);
-                if (el) {
-                    el.scrollTop = 0;
-                    el.scrollLeft = 0;
-                }
+        // Reset synchronously so a failed replacement has no queued scroll reset.
+        for (const id of ["staff-sidebar-content", "staff-content"]) {
+            const el = $(id);
+            if (el) {
+                el.scrollTop = 0;
+                el.scrollLeft = 0;
             }
-        });
+        }
     }
 
     ensureRuntimeStyles();
@@ -963,7 +979,14 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     global.addEventListener('vicboss:items-changed', updateExportButton);
     global.addEventListener('vicboss:weapons-changed', updateExportButton);
 
-    global.PWSEStaffUI = Object.freeze({
+    function createCheckpoint() {
+        const previous = {save, selectedIndex, uploadedNames, formDirty, changesSinceExport};
+        return () => {
+            ({save, selectedIndex, uploadedNames, formDirty, changesSinceExport} = previous);
+        };
+    }
+
+    global.PWSEStaffUI = Object.freeze({createCheckpoint,
         setSave,
         renderSidebar,
         downloadExport,

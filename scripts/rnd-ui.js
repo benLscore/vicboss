@@ -224,7 +224,12 @@
         if ($('rnd')) $('rnd').scrollTop = 0;
         document.querySelectorAll('#rnd-item-categories .rnd-table-scroll').forEach(el => { el.scrollLeft = 0; });
     }
-    global.VicbossRnDUI = Object.freeze({setSave, selectTab, render, flushPendingEdits,
+    function createCheckpoint() {
+        const previous = {save, changesSinceExport};
+        return () => { save = previous.save; changesSinceExport = previous.changesSinceExport; };
+    }
+
+    global.VicbossRnDUI = Object.freeze({createCheckpoint,setSave, selectTab, render, flushPendingEdits,
         hasUnexportedChanges: () => Boolean(save && changesSinceExport),
         markExported: () => { changesSinceExport = false; }
     });

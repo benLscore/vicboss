@@ -223,7 +223,12 @@
         render();
     }
     $('rnd-weapon-category')?.addEventListener('change', render);
-    global.VicbossRnDWeaponsUI = Object.freeze({setSave, render, flushPendingEdits,
+    function createCheckpoint() {
+        const previous = {save, changesSinceExport};
+        return () => { save = previous.save; changesSinceExport = previous.changesSinceExport; };
+    }
+
+    global.VicbossRnDWeaponsUI = Object.freeze({createCheckpoint,setSave, render, flushPendingEdits,
         hasUnexportedChanges: () => Boolean(save && changesSinceExport),
         markExported: () => { changesSinceExport = false; }
     });

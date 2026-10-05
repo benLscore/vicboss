@@ -50,5 +50,7 @@ function setSave(newSave){
  render();
 }
 
-global.PWSEOverviewUI=Object.freeze({setSave,render});
+function createCheckpoint(){const previous=save;return ()=>{save=previous;};}
+
+global.PWSEOverviewUI=Object.freeze({createCheckpoint,setSave,render});
 })(window);

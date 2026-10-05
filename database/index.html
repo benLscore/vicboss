@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vicboss - Database</title>
+    <link rel="stylesheet" href="../css/database.css">
+</head>
+
+<body>
+
+    <main>
+
+        <h1>Database</h1>
+
+        <hr>
+
+        <a id="back-to-editor" href="../">Back to the editor</a>
+
+        <p>This is a collection of informational pages containing all sorts of information about Vicboss and Peace
+            Walker.</p>
+
+        <div class="database-links">
+            <a href="https://github.com/benLscore/vicboss/blob/main/README.md" target="_blank">README</a>
+            <a href="mechguide.html">Mech Guide</a>
+            <a href="aiguide.html">AI & ZEKE Guide</a>
+            <a href="postgame.html">True Ending &amp; Postgame</a>
+            <a href="https://github.com/benLscore/vicboss">GitHub</a>
+            <a href="https://www.nexusmods.com/metalgearsolidpeacewalkermc/mods/22">Nexus</a>
+            <a href="credits.html">Credits</a>
+        </div>
+
+        <h2>Q&amp;A</h2>
+
+        <p><b>Q</b>: Does this work with save files that have been converted using Transfarmer?
+            <br>
+            <b>A</b>: As far as I can tell, yes.
+        </p>
+
+        <p><b>Q</b>: Can I edit Miller / Chico / Huey ...
+            <br>
+            <b>A</b>: Because unique (UNQ) soldiers have special game logic tied to how their information is stored,
+            editing them seems to be quite inconsistent. Along with the fact that some of their details (e.g. Amanda and
+            Zadornov) are tied to how far you are into the game, I decided not to include them in the staff editor to
+            make it more stable.
+        </p>
+
+        <p><b>Q</b>: Why can't I edit a staff member's Gender / Location?
+            <br>
+            <b>A</b>: Again, because there is special game logic that means that if you change either of these, you'll
+            have to change multiple other values as well. Staff location can easily be changed in-game; if a staff
+            member is ill in the sickbay or stuck the brig, you can use the editor to clear all of their current
+            statuses.
+        </p>
+
+        <br>
+
+        <p>
+            Vicboss is an unofficial, fan-made save editor and is not affiliated with or endorsed by Konami.
+            Editing save data may cause corruption or unexpected behaviour, so always create a backup before
+            making changes. Use this tool at your own risk. Metal Gear Solid and all related trademarks belong
+            to their respective owners.
+        </p>
+
+    </main>
+
+    <script>
+        // If the file is being opened locally, point to the main index.html instead of the main directory
+        if (location.protocol === "file:") {
+            document.getElementById("back-to-editor").href = "../index.html";
+        }
+    </script>
+</body>
+
+</html>

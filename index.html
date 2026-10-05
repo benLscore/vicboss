@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/editor.css">
     <!-- Preload fonts -->
     <link rel="preload" href="fonts/Peace Walker.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
     <link rel="preload" href="fonts/MPLUS1-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
@@ -37,23 +37,32 @@
 
         <h1>Vicboss - Peace Walker Save Editor</h1>
 
-        <!-- Small container for uploading save files -->
-        <fieldset>
-            <legend>Upload a save file here</legend>
-            <input id="saveFile" type="file" autocomplete="off" aria-label="Choose a Peace Walker save file">
-            <p id="error-message" role="alert" hidden></p>
-        </fieldset>
+        <!-- Links to informational pages -->
+        <div class="link-container">
+            <a href="#" id="upload-link" aria-controls="saveFile">Upload</a> ●
+            <a href="database/index.html">Database</a> ●
+            <a href="https://github.com/benLscore/vicboss" target="_blank">GitHub</a> ●
+            <a href="https://www.nexusmods.com/metalgearsolidpeacewalkermc/mods/22" target="_blank">Nexus</a> ●
+            <a href="database/credits.html">Credits</a>
+        </div>
 
+        <p id="error-message" role="alert" hidden></p>
 
         <!-- Container that is displayed when the save file has yet to be uploaded -->
         <div id="upload-container">
+
+            <!-- Small container for uploading save files -->
+            <fieldset>
+                <legend>Upload a save file here</legend>
+                <input id="saveFile" type="file" autocomplete="off" aria-label="Choose a Peace Walker save file">
+            </fieldset>
 
             <p>This tool is used for editing save files for Metal Gear Solid: Peace Walker for the Metal Gear Solid:
                 Master
                 Collection Vol. 2. This tool is only meant for PC: it will not work for console save files.</p>
 
-            <p>You can use this save editor to view an overview of your save file, edit Mother Base soldiers, and track
-                your weapon usage for getting different codenames.</p>
+            <p>You can use this save editor to view an overview of your save file, edit Mother Base soldiers, edit
+                Weapons and Items, and track different obtainable codenames.</p>
 
             <ul>
                 <li>Save location: SteamLibrary\steamapps\common\MGS_PW\mgspw_savedata_win\[Your Steam ID]\ww</li>
@@ -68,8 +77,6 @@
                     making changes. Use this tool at your own risk. Metal Gear Solid and all related trademarks belong
                     to their respective owners.
                 </p>
-                <p><a href="https://gleeson.itch.io/peace-walker-font-pack">Peace Walker font by gleeson</a> - <a
-                        href="https://creativecommons.org/licenses/by-sa/4.0/">License</a></p>
             </div>
 
 
@@ -82,26 +89,42 @@
         <div id="save-editor">
 
             <!-- Navigation tabs above the main content -->
-            <div class="tabs">
-                <button class="tab" onclick="show('overview')">OVERVIEW</button>
-                <button class="tab" onclick="show('staff')">STAFF</button>
-                <button class="tab" onclick="show('rnd')">R&amp;D</button>
-                <button class="tab" onclick="show('codename')">CODENAMES</button>
+            <div class="tabs" role="tablist" aria-label="Save editor sections">
+
+                <button type="button" class="tab" id="tab-overview" role="tab" data-editor-tab="overview"
+                    aria-controls="overview" aria-selected="true" tabindex="0"
+                    onclick="show('overview')">OVERVIEW</button>
+
+                <button type="button" class="tab" id="tab-staff" role="tab" data-editor-tab="staff"
+                    aria-controls="staff" aria-selected="false" tabindex="-1" onclick="show('staff')">STAFF</button>
+
+                <button type="button" class="tab" id="tab-rnd" role="tab" data-editor-tab="rnd" aria-controls="rnd"
+                    aria-selected="false" tabindex="-1" onclick="show('rnd')">R&amp;D</button>
+
+                <button type="button" class="tab" id="tab-codename" role="tab" data-editor-tab="codename"
+                    aria-controls="codename" aria-selected="false" tabindex="-1"
+                    onclick="show('codename')">CODENAMES</button>
+
             </div>
 
             <!-- Main content -->
             <div class="save-editor-content">
 
                 <!-- R&D editor -->
-                <div id="rnd" style="display: none;">
+                <div role="tabpanel" aria-labelledby="tab-rnd" id="rnd" style="display: none;">
+
                     <h2>R&amp;D</h2>
+
                     <div class="rnd-tabs" role="tablist" aria-label="R&amp;D sections">
                         <button type="button" id="rnd-tab-weapons" role="tab" data-rnd-tab="weapons"
                             aria-controls="rnd-weapons" aria-selected="true">Weapons</button>
+
                         <button type="button" id="rnd-tab-items" role="tab" data-rnd-tab="items"
                             aria-controls="rnd-items" aria-selected="false" tabindex="-1">Items</button>
+
                         <!-- <button type="button" id="rnd-tab-other" role="tab" data-rnd-tab="other" aria-controls="rnd-other" aria-selected="false" tabindex="-1">Other</button> -->
                     </div>
+
                     <div id="rnd-weapons" role="tabpanel" aria-labelledby="rnd-tab-weapons" data-rnd-panel="weapons">
                         <p id="rnd-weapons-summary">No save loaded</p>
                         <div class="rnd-bulk-actions">
@@ -118,6 +141,7 @@
                         </select>
                         <div id="rnd-weapon-categories"></div>
                     </div>
+
                     <div id="rnd-items" role="tabpanel" aria-labelledby="rnd-tab-items" data-rnd-panel="items" hidden>
                         <p id="rnd-items-summary">No save loaded</p>
                         <div class="rnd-bulk-actions">
@@ -128,11 +152,12 @@
                         </div>
                         <div id="rnd-item-categories"></div>
                     </div>
+
                     <!-- <div id="rnd-other" role="tabpanel" aria-labelledby="rnd-tab-other" data-rnd-panel="other" hidden><p>The Other view is not available yet.</p></div> -->
                 </div>
 
                 <!-- Overview tab -->
-                <div id="overview">
+                <div role="tabpanel" aria-labelledby="tab-overview" id="overview">
 
                     <div class="overview-content">
 
@@ -164,20 +189,20 @@
                                 </button>
 
                                 <!-- Option to set the "Last Saved" value to the current time -->
-                                <label class="export-last-saved">
-
-                                    <input type="checkbox" id="export-update-last-saved" checked>
-                                    Change "Last Saved" to current time
-
-                                    <!-- Info hover button -->
+                                <div class="export-last-saved">
+                                    <label>
+                                        <input type="checkbox" id="export-update-last-saved" checked>
+                                        Change "Last Saved" to current time
+                                    </label>
                                     <span class="info-tip">
-                                        <span type="button" class="info-tip-button"
-                                            title="This is to avoid the new save looking identical to the old one">
-                                            i
-                                        </span>
+                                        <button type="button" class="info-tip-button"
+                                            aria-label="About updating Last Saved"
+                                            aria-describedby="last-saved-help">i</button>
+                                        <span class="info-tip-text" id="last-saved-help" role="tooltip">Updates the
+                                            save's displayed date and time so the edited save is easier to distinguish
+                                            from the original.</span>
                                     </span>
-
-                                </label>
+                                </div>
 
                             </div>
 
@@ -196,7 +221,7 @@
                 </div>
 
                 <!-- Staff editor category -->
-                <div id="staff">
+                <div role="tabpanel" aria-labelledby="tab-staff" id="staff">
 
                     <div id="staff-sidebar">
 
@@ -269,10 +294,10 @@
                             <div class="ability">
                                 <p>Combat
                                     <span class="info-tip">
-                                        <span type="button" class="info-tip-button"
-                                            title="Combat is calculated using Combat Abilities - see below">
-                                            i
-                                        </span>
+                                        <button type="button" class="info-tip-button" aria-label="About Combat ability"
+                                            aria-describedby="combat-help">i</button>
+                                        <span class="info-tip-text" id="combat-help" role="tooltip">Combat is calculated
+                                            using the individual Combat Abilities shown below.</span>
                                     </span>
                                 </p>
                                 <p id="staff-combat-grade"></p>
@@ -420,7 +445,7 @@
                 </div>
 
                 <!-- Codenames / weapon tracker -->
-                <div id="codename">
+                <div role="tabpanel" aria-labelledby="tab-codename" id="codename">
 
                     <section class="codename-tracker">
                         <h2>Codename Tracker</h2>
@@ -439,15 +464,28 @@
 
                             <div class="weapons-takedowns">
 
-                                <div>
+                                <div class="takedowns-text">
                                     <p>
-                                        Total lethal takedowns:
+                                        Lethal takedowns:
                                         <span id="codename-lethal-total">—</span>
                                     </p>
 
                                     <p>
-                                        Total non-lethal takedowns:
+                                        Non-lethal takedowns:
                                         <span id="codename-nonlethal-total">—</span>
+                                    </p>
+
+                                    <p>
+                                        Grenade-launcher kills:
+                                        <span id="codename-grenade-launcher-kills">—</span>
+                                        <span class="info-tip">
+                                            <button type="button" class="info-tip-button"
+                                                aria-label="About Grenade Launcher kills"
+                                                aria-describedby="grenade-launcher-help">i</button>
+                                            <span class="info-tip-text" id="last-saved-help" role="tooltip">Grenade
+                                                Launcher kills do not count towards the total lethal takedowns or
+                                                codename eligibility.</span>
+                                        </span>
                                     </p>
 
                                     <p>
@@ -461,12 +499,12 @@
                                     </p>
 
                                     <p>
-                                        Current solo candidate:
+                                        Current solo candidates:
                                         <span id="codename-solo-candidates">—</span>
                                     </p>
 
                                     <p>
-                                        Current CO-OPS candidate:
+                                        Current CO-OPS candidates:
                                         <span id="codename-coop-candidates">—</span>
                                     </p>
                                 </div>
@@ -619,31 +657,37 @@
     </main>
     <script>
 
-        // Hide elements that should not immediately be visible
-        document.getElementById("save-editor").style = "display: none;";
-        document.getElementById("staff").style = "display: none;";
-        document.getElementById("codename").style = "display: none;";
-
-        // Function to display the selected category
+        document.getElementById("save-editor").style.display = "none";
 
         function show(tab) {
-
-            document.getElementById("rnd").style.display = "none";
-
-            // Hide all categories
-            document.getElementById("overview").style = "display: none;";
-            document.getElementById("staff").style = "display: none;";
-            document.getElementById("codename").style = "display: none;";
-
-            // Display the selected category
-            if (tab === "staff") {
-                // Staff category is displayed using flex instead of block
-                document.getElementById(tab).style = "display: flex;";
-            } else {
-                document.getElementById(tab).style = "display: block;";
+            const tabs = Array.from(document.querySelectorAll("[data-editor-tab]"));
+            if (!tabs.some(button => button.dataset.editorTab === tab)) return;
+            for (const button of tabs) {
+                const active = button.dataset.editorTab === tab;
+                button.setAttribute("aria-selected", String(active));
+                button.tabIndex = active ? 0 : -1;
+                document.getElementById(button.dataset.editorTab).style.display =
+                    active ? (tab === "staff" ? "flex" : "block") : "none";
             }
-
         }
+
+        const editorTabs = Array.from(document.querySelectorAll("[data-editor-tab]"));
+        editorTabs.forEach((button, index) => {
+            button.addEventListener("keydown", event => {
+                const targets = {
+                    ArrowRight: (index + 1) % editorTabs.length,
+                    ArrowLeft: (index + editorTabs.length - 1) % editorTabs.length,
+                    Home: 0,
+                    End: editorTabs.length - 1
+                };
+                if (!(event.key in targets)) return;
+                event.preventDefault();
+                const target = editorTabs[targets[event.key]];
+                show(target.dataset.editorTab);
+                target.focus();
+            });
+        });
+        show("overview");
 
     </script>
 
@@ -667,69 +711,7 @@
     <script src="scripts/rnd-weapons-ui.js"></script>
     <script src="scripts/session-ui.js"></script>
 
-    <script>
-        "use strict";
-
-        const $ = id => document.getElementById(id);
-
-        $("saveFile").addEventListener("change", async () => {
-            const fileInput = $("saveFile");
-            const file = fileInput.files[0];
-
-            if (!file) return;
-
-            if (!VicbossSession.confirmFileReplacement()) {
-                fileInput.value = "";
-                return;
-            }
-
-            fileInput.disabled = true;
-            try {
-                if (file.size !== PWSE.constants.FILE_SIZE) {
-                    throw Error(`Invalid save size: expected ${PWSE.constants.FILE_SIZE} bytes, got ${file.size}`);
-                }
-                const nextSave = PWSE.open(
-                    await file.arrayBuffer(),
-                    file.name
-                );
-
-                $("upload-container").style.display = "none";
-                $("save-editor").style.display = "flex";
-
-                PWSEOverviewUI.setSave(nextSave);
-                PWSEStaffUI.setSave(nextSave);
-                PWSECodenameUI.setSave(nextSave);
-                VicbossRnDUI.setSave(nextSave);
-                VicbossRnDWeaponsUI.setSave(nextSave);
-                VicbossSession.resetViewForNewSave();
-
-                $("error-message").textContent = "";
-                $("error-message").hidden = true;
-            } catch (error) {
-                console.error("Vicboss could not load the selected file", {
-                    filename: file.name,
-                    size: file.size,
-                    error
-                });
-
-                const message = "Invalid save file. Please select an encrypted Peace Walker PC save.";
-
-                const messageElement = $("error-message");
-
-                if (messageElement) {
-                    messageElement.textContent = message;
-                    messageElement.dataset.type = "error";
-                    messageElement.hidden = false;
-                } else {
-                    alert(message);
-                }
-
-            } finally {
-                fileInput.disabled = false;
-                fileInput.value = "";
-            }
-        });
-    </script>
+    <script src="scripts/upload-ui.js"></script>
 
 </body>
 

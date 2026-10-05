@@ -362,6 +362,10 @@ uses the highest INDIVIDUAL weapon type, so predictions retain per-type data.
         const heroism=statValue(plain,0x77);
         const camaraderie=u32(plain,0x38874);
         return Object.freeze({
+            // Stat 233: lethal kills shared by Kampfpistole and AR grenade attachments.
+            // Controlled post-mission tests retained 17 vs 3,000 and awarded the
+            // same SWALLOW II and HOUND II. Keep outside outcome/balance inputs.
+            grenadeLauncherKills:statValue(plain,233),
             groups,weaponTypes,outcome,balance:balanceResult,
             candidates,codenames,missions,heroism,camaraderie,
             candidateProgress:candidateProgress(candidates,codenames,missions,camaraderie,heroism),
@@ -369,6 +373,8 @@ uses the highest INDIVIDUAL weapon type, so predictions retain per-type data.
             eliteProgress:eliteProgress(codenames,missions,camaraderie,heroism,balanceResult,outcome),
             familyGuidance:familyGuidance(weaponTypes,outcome,candidates),
             notes:Object.freeze({
+                grenadeLauncherKills:"Separate grenade-launcher kill counter; excluded from these codename calculations. Controlled save tests found no effect on the outcome or weapon balance.",
+                tiedAwards:"Tied weapon types can award multiple codenames in one mission, alongside an eligible balanced-usage codename.",
                 groupedTotals:"Display totals combine weapon types, but codename family selection uses the highest individual weapon type.",
                 nonLethal:"Non-lethal combines incapacitation, tranquilization and stun outcomes.",
                 discriminator:"The evaluator takes non-lethal paths only when non-lethal minus twice lethal is greater than zero.",

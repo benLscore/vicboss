@@ -1,14 +1,14 @@
 /* Peace Walker font */
 @font-face {
     font-family: peaceWalker;
-    src: url("fonts/Peace\ Walker.ttf");
+    src: url("../fonts/Peace Walker.ttf") format("truetype");
     font-style: normal;
 }
 
 /* Default font */
 @font-face {
     font-family: "M PLUS 1";
-    src: url("fonts/MPLUS1-Medium.woff2");
+    src: url("../fonts/MPLUS1-Medium.woff2") format("woff2");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -54,6 +54,8 @@ body {
     position: relative;
     display: inline-flex;
     vertical-align: middle;
+    /* info-tip and info-tip-button both change the cursor to avoid the text appearing but the cursor not changing */
+    cursor: help;
 }
 
 .info-tip-button {
@@ -64,8 +66,50 @@ body {
     place-items: center;
     border: 1px solid black;
     border-radius: 50%;
-    font: 700 0.75rem/1 sans-serif;
+    font: 1rem sans-serif;
     cursor: help;
+
+    box-sizing: content-box;
+    background: transparent;
+    color: inherit;
+    margin: 0;
+
+}
+
+.info-tip-button:focus-visible {
+    outline: 2px solid #A21D1B;
+    outline-offset: 3px;
+}
+
+.info-tip-text {
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15rem;
+    max-width: 65vw;
+    padding: 0.5rem;
+    background: #161616;
+    color: white;
+    font: 0.9rem/1.4 sans-serif;
+    text-align: left;
+    z-index: 20;
+    visibility: hidden;
+}
+
+.info-tip:hover .info-tip-text,
+.info-tip:focus-within .info-tip-text {
+    visibility: visible;
+}
+
+
+/* Information page links */
+.link-container {
+    margin: 20px 0;
+}
+
+.link-container a {
+    color: black;
 }
 
 /* Container for the save file upload button */
@@ -80,7 +124,7 @@ fieldset {
 
 /* Legal */
 .disclaimer {
-    margin: 100px 0;
+    margin-top: 100px;
     max-width: 700px;
     color: darkslategrey;
 }
@@ -486,6 +530,7 @@ fieldset {
 
 table {
     border-collapse: collapse;
+    font-size: 1rem;
 }
 
 td,
@@ -517,8 +562,13 @@ th {
     gap: 10px;
 }
 
+.takedowns-text {
+    max-width: 400px;
+}
+
 .takedowns-table {
     text-align: center;
+    max-width: 500px;
 }
 
 .takedowns-table th,
@@ -530,10 +580,11 @@ th {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    gap: 10px;
 }
 
 .codename-next {
-    width: 450px;
+    max-width: 500px;
 }
 
 .codename-next-table td,

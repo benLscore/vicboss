@@ -1,6 +1,6 @@
 // THIS SCRIPT WAS CREATED USING GENERATIVE AI
 
-/* Weapon mapping and guarded stock editing. No development dependency rules.
+/* Weapon mapping and guarded stock editing.
    Record IDs/stride validated against PC saves: count at 0xBD7C,
    records at 0xBD80, stride 0x1C, IDs 1..253.
    Initial names/IDs: sagefantasma/MGSPW-Cheat-Trainer Models/Constants.cs.
