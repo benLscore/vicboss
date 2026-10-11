@@ -31,6 +31,10 @@ main {
     border-left: 2px solid lightgrey;
     border-right: 2px solid lightgrey;
 
+    /* Ensure fonts render consistently across browsers */
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
+
 }
 
 h1 {

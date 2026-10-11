@@ -57,7 +57,7 @@
 
     function installSave(nextSave) {
         const controllers = [global.PWSEOverviewUI, global.PWSEStaffUI,
-            global.PWSECodenameUI, global.VicbossRnDUI, global.VicbossRnDWeaponsUI];
+            global.PWSECodenameUI, global.VicbossRnDUI, global.VicbossRnDWeaponsUI, global.VicbossRnDOtherUI, global.VicbossRnDMechsUI];
         const restoreControllers = controllers.map(controller => controller.createCheckpoint());
         const roots = [$('save-editor'), $('upload-container')].filter(Boolean).map(captureNode);
         const focus = document.activeElement;
@@ -102,7 +102,7 @@
                 ? 'The save was read, but the editor could not display it. Any previously loaded save and edits have been kept.'
                 : stage === 'read'
                     ? 'The file could not be read. Please select it again.'
-                    : 'Invalid save file. Please select an encrypted Peace Walker PC save.');
+                    : 'Invalid save file. Please select a Peace Walker PC save.');
         } finally {
             fileInput.disabled = false;
             fileInput.value = '';

@@ -186,7 +186,8 @@ function specialStaffReason(tagCode,titleCode,name){
  return null
 }
 function parseStaffRecord(b,index){
- const base=STAFF_BASE+index*STAFF_STRIDE,n=nameInfo(b,base+O.NAME);if(!n.text)return null;
+ const base=index===-1?0x1C0BC:STAFF_BASE+index*STAFF_STRIDE,n=nameInfo(b,base+O.NAME);if(!n.text)return null;
+ if(index===-1&&(n.text!=='SNAKE'||u8(b,base+O.TAG)!==4||u8(b,base+O.TITLE)!==0x14))return null;
  const tagCode=u8(b,base+O.TAG),locationCode=u8(b,base+O.LOCATION),titleCode=u8(b,base+O.TITLE),status=u8(b,base+O.STATUS);
  const wounded=u16(b,base+O.WOUNDED),sick=u16(b,base+O.SICK),ptsd=u16(b,base+O.PTSD),hostilityRaw=u16(b,base+O.HOSTILITY),morale=u16(b,base+O.MORALE);
  const lp=u16(b,base+O.LIFE_CURRENT),pp=u16(b,base+O.PSY_CURRENT),medPct=medicalPercent(wounded,sick,ptsd);
@@ -194,8 +195,8 @@ function parseStaffRecord(b,index){
  // Stored/base values remain the editable source of truth.
  // Morale-adjusted values are derived live from those bases and are never written
  // back into the stored ability fields.
- const displayConditions={wounded,sick,ptsd,hostilityRaw};
- const effectiveAbility=v=>global.PWSEAbilityDisplay?.calculate(v,morale,displayConditions).effective ?? moraleFloor(v,morale);
+ const displayConditions={wounded,sick,ptsd,hostilityRaw,suppressMorale:tagCode===4};
+ const effectiveAbility=v=>global.PWSEAbilityDisplay?.calculate(v,morale,displayConditions).effective ?? moraleFloor(v,tagCode===4?0:morale);
  const combatDisplayValues={};const combatGrades={};
  for(const [k,v] of Object.entries(combat)){
   combatDisplayValues[k]=effectiveAbility(v);
@@ -213,15 +214,17 @@ function parseStaffRecord(b,index){
  const speechBytes=Object.freeze(Array.from(b.slice(base+O.SPEECH,base+O.SPEECH+6)));
  const genderFlag=(status&1)?'Male':'Female';
  const quote=global.PWSEQuotes?.preview(u32(b,base+O.SPEECH),genderFlag);
+ const specialQuote=isProtectedSpecialStaffData(tagCode,titleCode,n.text)
+  ? global.PWSEStaffLookups?.SPECIAL_QUOTES_BY_TITLE?.[titleCode] : null;
  const speechMappedGender=quote ? null : descriptionGenderForSelectorHex(speechHex);
  return Object.freeze({
-  index,fileOffset:base,largeRelativeOffset:base-LARGE,
-  name:n.text,nameBytesHex:n.bytesHex,
+  index,isSnake:index===-1,skillsEditable:index===-1||n.text.toUpperCase()==='HIDEO'||!isProtectedSpecialStaffData(tagCode,titleCode,n.text),fileOffset:base,largeRelativeOffset:base-LARGE,
+  name:tagCode===4&&titleCode===0x1C&&n.text==='ChCILE'?'CÈCILE':n.text,nameBytesHex:n.bytesHex,
   tag:Object.freeze({code:tagCode,label:tag(tagCode)}),
   location:Object.freeze({code:locationCode,label:loc(locationCode)}),
   previousLocation:Object.freeze({code:prev,label:prev===0?null:loc(prev)}),
-  title:Object.freeze({code:titleCode,label:title(titleCode)}),
-  description:Object.freeze({selectorHex:speechHex,selectorBytes:speechBytes,text:quote?.text ?? descriptionFromSelectorHex(speechHex,genderFlag),mappedGender:speechMappedGender,...(quote||{})}),
+  title:Object.freeze({code:titleCode,label:index===-1?'Big Boss':title(titleCode)}),
+  description:Object.freeze({selectorHex:speechHex,selectorBytes:speechBytes,text:quote?.text ?? descriptionFromSelectorHex(speechHex,genderFlag),mappedGender:speechMappedGender,...(quote||{}),...(specialQuote?{text:specialQuote,key:null,characterSpecific:true}:{} )}),
   portraitCode:u32(b,base+O.PORTRAIT),
   genderFlag,statusRaw:status,
   specialReadOnly:isProtectedSpecialStaffData(tagCode,titleCode,n.text),
@@ -237,10 +240,10 @@ function parseStaffRecord(b,index){
   departmentDisplayValues:Object.freeze(departmentDisplayValues),
   departmentGrades:Object.freeze(departmentGrades),
   conditions:Object.freeze({
-   wounded,sick,ptsd,hostilityRaw,
+   wounded,sick,ptsd,hostilityRaw,suppressMorale:tagCode===4,
    hostilityDisplayLevel:hostilityDisplay(hostilityRaw),
    morale,
-   moraleMultiplier:moraleMultiplier(morale),
+   moraleMultiplier:tagCode===4?1:moraleMultiplier(morale),
    medicalPercent:medPct
   }),
   skills:Object.freeze(sc.map(code=>Object.freeze({code,label:skill(code)}))),
@@ -283,17 +286,52 @@ class PeaceWalkerSave{
   }
   if(!this.validation.roundTripExact)throw Error('Save encryption round-trip validation failed');
   this._dirty=false;
+  this._uniqueStaffEditingEnabled=false;
+  this._outerOpsEditingEnabled=false;
+  this._profileNameEditingEnabled=false;
   this._editedStaffIndices=new Set();
   this._editedItemIds=new Set();
   this._editedWeaponIds=new Set();
+  this._editedOtherIds=new Set();
+  this._editedMechSlots=new Set();
   this._refresh();
  }
  _refresh(){
   this.overview=parseOverview(this._plain);
   this.rndItems=global.VicbossRnDItems?.parse(this._plain)||null;
+  this.rndMechs=global.VicbossRnDMechs?.parse(this._plain)||null;
+  this.rndOther=global.VicbossRnDOther?.parse(this._plain)||null;
   this.rndWeapons=global.VicbossRnDWeapons?.parse(this._plain)||null;
   this.staff=parseStaff(this._plain);
+  this.snake=parseStaffRecord(this._plain,-1);
   this.codenameTracker=global.PWSECodenameTracker?.parse(this._plain)||null;
+ }
+ get uniqueStaffEditingEnabled(){return this._uniqueStaffEditingEnabled}
+ setUniqueStaffEditing(enabled){
+  if(typeof enabled!=='boolean')throw Error('Unique staff editing must be true or false');
+  this._uniqueStaffEditingEnabled=enabled;
+ }
+ setProfileNameEditing(enabled){
+  if(typeof enabled!=='boolean')throw Error('Profile name editing must be true or false');
+  this._profileNameEditingEnabled=enabled;
+ }
+ updateProfileName(value){
+  if(!this._profileNameEditingEnabled)throw Error('Enable profile name editing first');
+  if(typeof value!=='string')throw Error('Profile name must be text');
+  const name=value.toUpperCase();
+  if(!/^[A-Z0-9 !"$&()\-= _+\[\];:'@#,./?]{1,15}$/i.test(value)||!name.trim())
+   throw Error('Use 1–15 letters, numbers, spaces or supported symbols');
+  if(name===this.overview.profileName)return this.overview;
+  const draft=new Uint8Array(this._plain),offset=OVERVIEW_O.PROFILE_NAME;
+  draft.fill(0,offset,offset+16);
+  for(let i=0;i<name.length;i++)draft[offset+i]=name.charCodeAt(i);
+  this._plain=draft;this._dirty=true;this._refresh();
+  return this.overview;
+ }
+ get outerOpsEditingEnabled(){return this._outerOpsEditingEnabled}
+ setOuterOpsEditing(enabled){
+  if(typeof enabled!=='boolean')throw Error('OUTER OPS editing must be true or false');
+  this._outerOpsEditingEnabled=enabled;
  }
  get isDirty(){return this._dirty}
  get editedStaffIndices(){return Object.freeze(Array.from(this._editedStaffIndices).sort((a,b)=>a-b))}
@@ -351,6 +389,67 @@ class PeaceWalkerSave{
   this._refresh();
   return this.rndWeapons;
  }
+ healAllMechs(){
+  if(!global.VicbossRnDMechs)throw Error('Mech editing is not available');
+  const draft=global.VicbossRnDMechs.healAll(this._plain,this._outerOpsEditingEnabled);
+  const changed=this.rndMechs.entries.filter(entry=>{
+   const offset=0x115E8+entry.slot*0xA0+0x42;
+   return u16(draft,offset)!==u16(this._plain,offset);
+  });
+  if(!changed.length)return 0;
+  changed.forEach(entry=>this._editedMechSlots.add(entry.slot));
+  this._plain=draft;this._dirty=true;this._refresh();
+  return changed.length;
+ }
+ bulkOther(action){
+  if(!['unlock','stock'].includes(action))throw Error('Invalid bulk Other action');
+  const api=global.VicbossRnDOther;
+  if(!api)throw Error('Other editing is not available');
+  let draft=new Uint8Array(this._plain);
+  const groups=api.parse(draft).filter(group=>action==='unlock'||group.key==='bullets');
+  const entries=groups.flatMap(group=>group.entries);
+  if(entries.some(entry=>!entry.available||entry.owned===null))throw Error('Some Other records are unavailable; no changes were applied');
+  for(const entry of entries){
+   if(action==='unlock')draft=api.edit(draft,entry.id,{owned:true});
+   else if(entry.owned)draft=api.edit(draft,entry.id,{stock:9999});
+  }
+  const changed=entries.filter(entry=>{
+   const offset=0xE2E8+entry.id*0x18;
+   return !equal(draft.subarray(offset,offset+0x18),this._plain.subarray(offset,offset+0x18));
+  });
+  if(!changed.length)return 0;
+  changed.forEach(entry=>this._editedOtherIds.add(entry.id));
+  this._plain=draft;this._dirty=true;this._refresh();
+  return changed.length;
+ }
+ updateMechLife(slot,percent){
+  if(!global.VicbossRnDMechs)throw Error('Mech editing is not available');
+  const draft=global.VicbossRnDMechs.editLife(this._plain,slot,percent,this._outerOpsEditingEnabled);
+  if(equal(draft,this._plain))return this.rndMechs;
+  this._editedMechSlots.add(slot);
+  this._plain=draft;this._dirty=true;this._refresh();
+  return this.rndMechs;
+ }
+ addMech(model){
+  if(!global.VicbossRnDMechs)throw Error('Mech editing is not available');
+  const result=global.VicbossRnDMechs.add(this._plain,model);
+  this._plain=result.bytes;this._editedMechSlots.add(result.slot);
+  this._dirty=true;this._refresh();return this.rndMechs;
+ }
+ removeMech(slot){
+  if(!global.VicbossRnDMechs)throw Error('Mech editing is not available');
+  const result=global.VicbossRnDMechs.remove(this._plain,slot);
+  this._plain=result.bytes;this._editedMechSlots.add(result.slot);
+  this._dirty=true;this._refresh();return this.rndMechs;
+ }
+ updateOther(id,patch){
+  if(!global.VicbossRnDOther)throw Error('Other editing is not available');
+  const draft=global.VicbossRnDOther.edit(this._plain,id,patch);
+  if(equal(draft,this._plain))return this.rndOther;
+  this._editedOtherIds.add(id);
+  this._plain=draft;this._dirty=true;this._refresh();
+  return this.rndOther;
+ }
  planItemDevelopment(id,developed){
   if(!global.VicbossRnDItems)throw Error('Item editing is not available');
   return global.VicbossRnDItems.developmentPlan(this._plain,id,developed);
@@ -369,19 +468,25 @@ class PeaceWalkerSave{
   return this.rndItems;
  }
  getStaffByName(name){const q=String(name).toUpperCase();return this.staff.filter(s=>s.name.toUpperCase()===q)}
- getStaffByIndex(index){return this.staff.find(s=>s.index===Number(index))||null}
+ getStaffByIndex(index){return Number(index)===-1?this.snake:this.staff.find(s=>s.index===Number(index))||null}
 
  updateStaff(index,patch={}){
-  index=intInRange('Staff index',index,0,STAFF_CAPACITY-1);
+  index=intInRange('Staff index',index,-1,STAFF_CAPACITY-1);
   const current=parseStaffRecord(this._plain,index);
   if(!current)throw Error(`Staff record ${index} is empty`);
   if(current.dismissalRelatedFlag)throw Error('Discharged staff cannot be edited');
-  if(current.specialReadOnly)throw Error(`${current.name} is protected special staff and cannot be edited`);
-  if(current.outerOps)throw Error('Staff currently dispatched on OUTER OPS cannot be edited');
+  if(current.specialReadOnly&&!this._uniqueStaffEditingEnabled)throw Error(`${current.name} is protected special staff; enable unique staff editing first`);
+  if(current.outerOps&&!this._outerOpsEditingEnabled)throw Error('Staff currently dispatched on OUTER OPS cannot be edited');
 
   if(!patch || typeof patch !== 'object' || Array.isArray(patch))throw Error('Staff patch must be an object');
+  if(current.outerOps&&patch.clearStatuses)throw Error('Remove staff from OUTER OPS before clearing statuses');
   const allowed=new Set(['gmpBase','morale','skills','departments','combatAbilities','lifeCurrent','psycheCurrent','tagCode','titleCode','clearStatuses','portraitCode','quoteKey','name']);
   for(const key of Object.keys(patch))if(!allowed.has(key))throw Error(`${key} is read-only or unsupported`);
+  if(current.specialReadOnly){
+   const specialAllowed=new Set(['gmpBase','departments','combatAbilities','lifeCurrent','psycheCurrent']);
+   if(current.skillsEditable)specialAllowed.add('skills');
+   for(const key of Object.keys(patch))if(!specialAllowed.has(key))throw Error(`${key} is read-only for unique staff and Hideo`);
+  }
   if(Object.keys(patch).length===0)return this.getStaffByIndex(index);
   for(const key of ['departments','combatAbilities']){
    if(Object.prototype.hasOwnProperty.call(patch,key) && (!patch[key] || typeof patch[key]!=='object' || Array.isArray(patch[key])))
@@ -389,7 +494,7 @@ class PeaceWalkerSave{
   }
   // Commit only after every field passes validation.
   const draft=new Uint8Array(this._plain);
-  const base=STAFF_BASE+index*STAFF_STRIDE;
+  const base=current.fileOffset;
 
   if(Object.prototype.hasOwnProperty.call(patch,'name')){
    if(typeof patch.name!=='string')throw Error('Name must be text');
@@ -516,6 +621,8 @@ class PeaceWalkerSave{
   this._editedStaffIndices.clear();
   this._editedItemIds.clear();
   this._editedWeaponIds.clear();
+  this._editedOtherIds.clear();
+  this._editedMechSlots.clear();
   this._refresh();
  }
 
@@ -538,6 +645,10 @@ class PeaceWalkerSave{
    staffEdited:this._editedStaffIndices.size>0,
    weaponsEdited:this._editedWeaponIds.size>0,
    editedWeaponIds:this.editedWeaponIds,
+   mechsEdited:this._editedMechSlots.size>0,
+   editedMechSlots:Object.freeze([...this._editedMechSlots]),
+   otherEdited:this._editedOtherIds.size>0,
+   editedOtherIds:Object.freeze([...this._editedOtherIds]),
    itemsEdited:this._editedItemIds.size>0,
    editedItemIds:this.editedItemIds,
    lastSavedUpdated:updateLastSaved,

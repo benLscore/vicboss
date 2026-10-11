@@ -210,6 +210,7 @@ fieldset {
     text-align: center;
     max-width: 80%;
     margin: auto;
+    padding: 10px 0;
     font-size: 1.1rem;
     height: 120px;
     border-bottom: 1px solid black;
@@ -220,6 +221,10 @@ fieldset {
     font-family: peaceWalker;
     margin: 0;
     text-align: center;
+
+    /* Ensure long names do not cause clipping */
+    max-width: 400px;
+    word-break: break-word;
 }
 
 .overview-main p {
@@ -256,12 +261,12 @@ fieldset {
 }
 
 .overview-export {
-    display: grid;
+    /* display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    justify-content: center;
+    justify-content: center; */
 
-    max-width: 90%;
+    max-width: 60%;
     margin: auto;
 }
 
@@ -270,9 +275,11 @@ fieldset {
     /* Center button */
     display: block;
     margin: 0 auto 20px;
+    padding: 5px 10px;
+    border-radius: 10px;
 
     font-family: peaceWalker;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
 }
 
 /* Staff category */
@@ -741,6 +748,91 @@ th {
 }
 
 
+/* Five-column R&D Other inventory */
+.rnd-other-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-width: 800px;
+}
+
+.rnd-other-card {
+    border: 1px solid black;
+    padding: 10px;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.rnd-other-card h4 {
+    font-size: 1em;
+    margin: 0 0 12px;
+}
+
+.rnd-other-card label {
+    display: block;
+    margin: 8px 0;
+}
+
+.rnd-other-card input[type="number"] {
+    width: 100%;
+    max-width: 7em;
+    box-sizing: border-box;
+}
+
+/* Captured mechs are individual records, including duplicate models. */
+.rnd-mechs-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-width: 800px;
+}
+
+.rnd-mech-card {
+    border: 1px solid black;
+    padding: 10px;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.rnd-mech-card h4 {
+    font-size: 1em;
+    margin: 0 0 12px;
+}
+
+.rnd-mech-card progress {
+    display: block;
+    width: 100%;
+    height: 1rem;
+}
+
+#rnd-mechs details {
+    margin: 1rem 0;
+}
+
+#rnd-mechs summary {
+    cursor: pointer;
+}
+
+.add-mech-button {
+    margin-left: 5px;
+}
+
+/* Advanced settings */
+
+#advanced {
+    padding: 0px 30px;
+}
+
+#advanced h2 {
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+    margin: 15px 0;
+}
+
+.checkbox-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 /* Mobile Styles */
 
 @media (max-width: 768px) {
@@ -880,4 +972,11 @@ th {
         font-size: 0.9rem;
     }
 
+}
+
+.rnd-bulk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
 }

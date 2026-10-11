@@ -14,6 +14,7 @@
             const percent = Math.min(...percentages);
             return { effective: Math.ceil(base * percent / 100), kind: 'medical', estimated: true, percent };
         }
+        if (conditions.suppressMorale) return { effective: Math.floor(base), kind: 'base', estimated: false };
         if (h > 0) return { effective: Math.floor(base), kind: 'hostility', estimated: false };
         return { effective: Math.floor(base * (morale <= 500 ? 1 : (2500 + morale - 500) / 2500)), kind: 'morale', estimated: false };
     }

@@ -105,6 +105,10 @@
                     aria-controls="codename" aria-selected="false" tabindex="-1"
                     onclick="show('codename')">CODENAMES</button>
 
+                <button type="button" class="tab" id="tab-advanced" role="tab" data-editor-tab="advanced"
+                    aria-controls="advanced" aria-selected="false" tabindex="-1"
+                    onclick="show('advanced')">ADVANCED</button>
+
             </div>
 
             <!-- Main content -->
@@ -122,7 +126,10 @@
                         <button type="button" id="rnd-tab-items" role="tab" data-rnd-tab="items"
                             aria-controls="rnd-items" aria-selected="false" tabindex="-1">Items</button>
 
-                        <!-- <button type="button" id="rnd-tab-other" role="tab" data-rnd-tab="other" aria-controls="rnd-other" aria-selected="false" tabindex="-1">Other</button> -->
+                        <button type="button" id="rnd-tab-mechs" role="tab" data-rnd-tab="mechs"
+                            aria-controls="rnd-mechs" aria-selected="false" tabindex="-1">Mechs</button>
+                        <button type="button" id="rnd-tab-other" role="tab" data-rnd-tab="other"
+                            aria-controls="rnd-other" aria-selected="false" tabindex="-1">Other</button>
                     </div>
 
                     <div id="rnd-weapons" role="tabpanel" aria-labelledby="rnd-tab-weapons" data-rnd-panel="weapons">
@@ -153,7 +160,14 @@
                         <div id="rnd-item-categories"></div>
                     </div>
 
-                    <!-- <div id="rnd-other" role="tabpanel" aria-labelledby="rnd-tab-other" data-rnd-panel="other" hidden><p>The Other view is not available yet.</p></div> -->
+                    <div id="rnd-mechs" role="tabpanel" aria-labelledby="rnd-tab-mechs" data-rnd-panel="mechs" hidden>
+                        <h3>Captured Mechs</h3>
+                        <div id="rnd-mechs-categories"></div>
+                    </div>
+
+                    <div id="rnd-other" role="tabpanel" aria-labelledby="rnd-tab-other" data-rnd-panel="other" hidden>
+                        <div id="rnd-other-categories"></div>
+                    </div>
                 </div>
 
                 <!-- Overview tab -->
@@ -187,22 +201,6 @@
                                 <button id="exportSave" type="button" disabled>
                                     EXPORT SAVE
                                 </button>
-
-                                <!-- Option to set the "Last Saved" value to the current time -->
-                                <div class="export-last-saved">
-                                    <label>
-                                        <input type="checkbox" id="export-update-last-saved" checked>
-                                        Change "Last Saved" to current time
-                                    </label>
-                                    <span class="info-tip">
-                                        <button type="button" class="info-tip-button"
-                                            aria-label="About updating Last Saved"
-                                            aria-describedby="last-saved-help">i</button>
-                                        <span class="info-tip-text" id="last-saved-help" role="tooltip">Updates the
-                                            save's displayed date and time so the edited save is easier to distinguish
-                                            from the original.</span>
-                                    </span>
-                                </div>
 
                             </div>
 
@@ -267,6 +265,10 @@
                         </div>
 
                         <!-- Most important information (name, life psyche, gmp, morale) -->
+                        <p id="staff-snake-warning" role="note" hidden>
+                            NOTE: Snake's values are set back to default when opening Mission Prep, even if you don't
+                            change anything. If you want to play as Snake while also keeping your changes, you'll need
+                            to click "START MISSION" immediately instead of opening Mission Prep.</p>
                         <div class="staff-main-details">
                             <div class="staff-name-editor">
                                 <p id="staff-name">NAME</p>
@@ -355,7 +357,7 @@
                                 <p>Wounded: <span id="staff-wounded"></span></p>
                                 <p>PTSD: <span id="staff-ptsd"></span></p>
                                 <button type="button" id="staff-clear-statuses"
-                                    aria-describedby="staff-clear-statuses-help">Clear Statuses</button>
+                                    >Clear Statuses</button>
                             </div>
 
                         </div>
@@ -363,7 +365,7 @@
                         <!-- Staff description (quote) -->
                         <div class="staff-quote-editor">
                             <label for="staff-quote-choice">Quote:</label> <br>
-                            <select id="staff-quote-choice" aria-describedby="staff-desc-note"></select>
+                            <select id="staff-quote-choice"></select>
                             <p class="staff-quote">"<span id="staff-desc"></span>"</p>
                         </div>
 
@@ -482,7 +484,7 @@
                                             <button type="button" class="info-tip-button"
                                                 aria-label="About Grenade Launcher kills"
                                                 aria-describedby="grenade-launcher-help">i</button>
-                                            <span class="info-tip-text" id="last-saved-help" role="tooltip">Grenade
+                                            <span class="info-tip-text" id="grenade-launcher-help" role="tooltip">Grenade
                                                 Launcher kills do not count towards the total lethal takedowns or
                                                 codename eligibility.</span>
                                         </span>
@@ -650,6 +652,55 @@
 
                 </div>
 
+                <div role="tabpanel" aria-labelledby="tab-advanced" id="advanced" style="display:none;">
+
+                    <h2>Advanced Settings</h2>
+
+                    <p>These settings are for advanced users only. Changing these values could result in strange game
+                        behaviour or save file corruption.</p>
+
+                    <!-- List of options -->
+                    <div class="checkbox-container">
+
+                        <!-- Option to set the "Last Saved" value to the current time -->
+                        <div class="export-last-saved">
+                            <label>
+                                <input type="checkbox" id="export-update-last-saved" checked>
+                                Change "Last Saved" to current time
+                            </label>
+                            <span class="info-tip">
+                                <button type="button" class="info-tip-button" aria-label="About updating Last Saved"
+                                    aria-describedby="last-saved-help">i</button>
+                                <span class="info-tip-text" id="last-saved-help" role="tooltip">Updates the
+                                    save's displayed date and time so the edited save is easier to distinguish
+                                    from the original.</span>
+                            </span>
+                        </div>
+
+                        <label>
+                            <input type="checkbox" id="enable-unique-editing">
+                            Enable "Unique" staff member editing</label>
+
+                        <label>
+                            <input type="checkbox" id="enable-outerops-editing">
+                            Enable OUTER OPS editing
+                        </label>
+
+                        <div id="profile-name-editor">
+                            <label for="profile-name-input">Edit Name: </label>
+                            <input id="profile-name-input" type="text" maxlength="15" autocomplete="off"
+                                spellcheck="false" aria-describedby="profile-name-help" disabled> <br>
+                            <small id="profile-name-help">Up to 15 characters.</small>
+                        </div>
+
+                    </div>
+
+
+
+
+
+                </div>
+
             </div>
 
         </div>
@@ -701,7 +752,9 @@
     <script src="scripts/portrait-options.js"></script>
     <script src="scripts/ability-display.js"></script>
     <script src="scripts/rnd-items.js"></script>
+    <script src="scripts/rnd-other.js"></script>
     <script src="scripts/rnd-weapons.js"></script>
+    <script src="scripts/rnd-mechs.js"></script>
     <script src="scripts/core.js"></script>
 
     <script src="scripts/staff-edit-ui.js"></script>
@@ -709,6 +762,8 @@
     <script src="scripts/codename-ui.js"></script>
     <script src="scripts/rnd-ui.js"></script>
     <script src="scripts/rnd-weapons-ui.js"></script>
+    <script src="scripts/rnd-other-ui.js"></script>
+    <script src="scripts/rnd-mechs-ui.js"></script>
     <script src="scripts/session-ui.js"></script>
 
     <script src="scripts/upload-ui.js"></script>

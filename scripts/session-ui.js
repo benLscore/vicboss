@@ -17,7 +17,7 @@ protects staff changes that have not yet been exported.
     }
 
     function hasUnexportedChanges() {
-        return Boolean(global.PWSEStaffUI?.hasUnexportedChanges?.() || global.VicbossRnDUI?.hasUnexportedChanges?.() || global.VicbossRnDWeaponsUI?.hasUnexportedChanges?.());
+        return Boolean(global.PWSEOverviewUI?.hasUnexportedChanges?.() || global.PWSEStaffUI?.hasUnexportedChanges?.() || global.VicbossRnDUI?.hasUnexportedChanges?.() || global.VicbossRnDWeaponsUI?.hasUnexportedChanges?.() || global.VicbossRnDOtherUI?.hasUnexportedChanges?.() || global.VicbossRnDMechsUI?.hasUnexportedChanges?.());
     }
 
     function resetScrollPositions() {

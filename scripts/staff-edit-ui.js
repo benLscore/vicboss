@@ -7,7 +7,7 @@ Editable: name, LIFE, PSYCHE, base GMP, morale, department/combat abilities,
 ordinary tag/title, same-gender portrait/quote, and four skill slots.
 Clear Statuses removes all conditions and transfers affected staff to Waiting Room.
 Gender/location and derived overall Combat remain read-only.
-Protected special staff are hidden; OUTER OPS staff cannot be edited.
+Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edited.
 */
 (function (global) {
     "use strict";
@@ -289,7 +289,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         populateOrdinarySelect("staff-title", soldier.title,
             global.PWSEStaffLookups?.TITLE_NAMES || {},
             global.PWSEStaffLookups?.SPECIAL_ONLY_TITLE_IDS ||
-                [0x15, 0x16, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x57]);
+            [0x15, 0x16, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x57]);
     }
 
     function readChoiceOrCurrent(id, label, currentCode) {
@@ -357,8 +357,20 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     }
 
     function populateDescriptionSelect(soldier) {
+        if (soldier.specialReadOnly) {
+            const select = $('staff-quote-choice');
+            if (select) {
+                select.replaceChildren();
+                const text = soldier.description?.characterSpecific ? soldier.description.text : 'Character-specific quote (not mapped)';
+                option(select, '', text);
+                select.title = text;
+            }
+            showReadOnly('staff-desc', '', soldier.description?.characterSpecific ? soldier.description.text : 'Character-specific quote (not mapped)');
+            return;
+        }
         const el = $("staff-quote-choice");
         if (el) {
+            el.removeAttribute("title");
             el.replaceChildren();
             const key = soldier.description?.key;
             const prefix = soldier.genderFlag === "Male" ? "m" : "f";
@@ -424,6 +436,12 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         });
     }
 
+    function outerOpsLocked(soldier) { return soldier.outerOps && !save?.outerOpsEditingEnabled; }
+
+    function uniqueEditingEnabled() {
+        return Boolean(save?.uniqueStaffEditingEnabled);
+    }
+
     function setEditingState(soldier) {
         const panel = $("staff-content");
         if (!panel) return;
@@ -432,8 +450,15 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             el.disabled = true;
         });
 
-        if (!soldier.outerOps && !soldier.specialReadOnly) {
+        if (!outerOpsLocked(soldier) && (!soldier.specialReadOnly || uniqueEditingEnabled())) {
+            const restricted = new Set([
+                'staff-name-input', 'staff-tag', 'staff-title', 'staff-quote-choice',
+                'staff-portrait-choice', 'staff-clear-statuses', 'staff-morale',
+                'staff-max-everything', 'staff-skill-1', 'staff-skill-2',
+                'staff-skill-3', 'staff-skill-4'
+            ]);
             for (const id of EDITABLE_IDS) {
+                if (soldier.specialReadOnly && restricted.has(id) && !(soldier.skillsEditable && /^staff-skill-[1-4]$/.test(id))) continue;
                 const el = $(id);
                 if (el) el.disabled = false;
             }
@@ -449,6 +474,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     function populateStaff(soldier) {
         if (!soldier) return;
         selectedIndex = soldier.index;
+        if ($('staff-snake-warning')) $('staff-snake-warning').hidden = !soldier.isSnake;
         if ($("staff-content")) $("staff-content").hidden = false;
 
         setText("staff-name", soldier.name);
@@ -478,9 +504,14 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             for (const p of choices) option(portraitSelect, p.code, p.label.split(" — ")[0]);
             portraitSelect.value = String(soldier.portraitCode);
         }
-        populateOrdinarySelect("staff-tag", soldier.tag, {6: "POW", 7: "VOL", 8: "NML"});
+        populateOrdinarySelect("staff-tag", soldier.tag, { 6: "POW", 7: "VOL", 8: "NML" });
 
         populateTitleSelect(soldier);
+        if (soldier.specialReadOnly) {
+            showReadOnly('staff-tag', soldier.tag.code, soldier.tag.label);
+            showReadOnly('staff-title', soldier.title.code, soldier.title.label);
+            showReadOnly('staff-portrait-choice', soldier.portraitCode, soldier.name + ' portrait');
+        }
         populateDescriptionSelect(soldier);
 
         setText("staff-hostility", soldier.conditions.hostilityDisplayLevel);
@@ -501,12 +532,12 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         const panel = $("staff-content");
         if (overlay) {
             const box = overlay.querySelector("div");
-            if (soldier.outerOps) {
+            if (outerOpsLocked(soldier)) {
                 overlay.style.display = "flex";
                 if (box) {
                     box.innerHTML =
                         `CURRENTLY DISPATCHED ON OUTER OPS` +
-                        `<small>This staff member is read-only until they return.</small>`;
+                        `<small>Take this staff out of OUTER OPS in-game to enable editing.<br>You could also enable OUTER OPS editing in Advanced settings.</small>`;
                 }
                 if (panel) {
                     panel.scrollTop = 0;
@@ -540,8 +571,8 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         const nameQuery = ($("staff-sidebar-name")?.value || "").trim().toUpperCase();
         const team = $("staff-sidebar-team")?.value || "all";
 
-        return save.staff.filter(soldier => {
-            if (soldier.specialReadOnly) return false;
+        return (save.snake ? [save.snake, ...save.staff] : save.staff).filter(soldier => {
+            if (soldier.specialReadOnly && !uniqueEditingEnabled()) return false;
 
             const matchesName =
                 !nameQuery ||
@@ -570,17 +601,10 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     function collectCurrentPatch() {
         restoreBlankName();
         const soldier = currentSoldier();
-        return {
-            name: $("staff-name-input")?.value ?? soldier.name,
-            portraitCode: readChoiceOrCurrent("staff-portrait-choice", "Portrait", soldier.portraitCode),
-            quoteKey: $("staff-quote-choice")?.value || soldier.description.key,
-            tagCode: readChoiceOrCurrent("staff-tag", "Tag", soldier.tag.code),
-            titleCode: readChoiceOrCurrent("staff-title", "Title", soldier.title.code),
+        const patch = {
             lifeCurrent: readInteger("staff-life", "LIFE"),
             psycheCurrent: readInteger("staff-psyche", "PSYCHE"),
             gmpBase: readInteger("staff-gmp", "GMP"),
-            morale: readInteger("staff-morale", "Morale"),
-            skills: [1, 2, 3, 4].map(n => readInteger(`staff-skill-${n}`, `Skill ${n}`)),
             departments: {
                 rd: readInteger("staff-rd-num", "R&D"),
                 mess: readInteger("staff-messhall-num", "Mess Hall"),
@@ -598,6 +622,19 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
                 defense: readInteger("staff-defense-num", "Defense")
             }
         };
+        if (soldier.specialReadOnly) {
+            if (soldier.skillsEditable) patch.skills = [1,2,3,4].map(n => readInteger(`staff-skill-${n}`, `Skill ${n}`));
+            return patch;
+        }
+        return Object.assign(patch, {
+            name: $("staff-name-input")?.value ?? soldier.name,
+            portraitCode: readChoiceOrCurrent("staff-portrait-choice", "Portrait", soldier.portraitCode),
+            quoteKey: $("staff-quote-choice")?.value || soldier.description.key,
+            tagCode: readChoiceOrCurrent("staff-tag", "Tag", soldier.tag.code),
+            titleCode: readChoiceOrCurrent("staff-title", "Title", soldier.title.code),
+            morale: readInteger("staff-morale", "Morale"),
+            skills: [1, 2, 3, 4].map(n => readInteger(`staff-skill-${n}`, `Skill ${n}`)),
+        });
     }
 
     function currentSoldier() {
@@ -614,7 +651,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             return true;
         }
 
-        if (soldier.outerOps || soldier.specialReadOnly) {
+        if (outerOpsLocked(soldier) || (soldier.specialReadOnly && !uniqueEditingEnabled())) {
             formDirty = false;
             return true;
         }
@@ -644,7 +681,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         if (!flushCurrentForm()) return false;
 
         const soldier = save.getStaffByIndex(index);
-        if (!soldier || soldier.specialReadOnly) return false;
+        if (!soldier || (soldier.specialReadOnly && !uniqueEditingEnabled())) return false;
         populateStaff(soldier);
         return true;
     }
@@ -665,7 +702,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             button.dataset.index = String(soldier.index);
             button.textContent = soldier.name;
 
-            if (soldier.outerOps) {
+            if (outerOpsLocked(soldier)) {
                 button.title = "Currently dispatched on OUTER OPS";
             }
 
@@ -747,7 +784,8 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
 
     function maximiseSelectedStaff(kind) {
         const soldier = currentSoldier();
-        if (!soldier || soldier.specialReadOnly || soldier.outerOps) return;
+        if (!soldier || outerOpsLocked(soldier) || (soldier.specialReadOnly && !uniqueEditingEnabled())) return;
+        if (soldier.specialReadOnly && kind === 'everything') return;
         if (!["abilities", "vitals", "everything"].includes(kind)) return;
         // Update the current draft, preserving unrelated pending edits.
         if (kind === "abilities" || kind === "everything") {
@@ -799,7 +837,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             el.addEventListener("blur", () => {
                 const before = el.value;
                 constrainNumber(el, true);
-                if (before !== el.value) el.dispatchEvent(new Event("input", {bubbles: true}));
+                if (before !== el.value) el.dispatchEvent(new Event("input", { bubbles: true }));
             });
         }
     }
@@ -808,7 +846,7 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     function restoreBlankName() {
         const el = $("staff-name-input");
         const soldier = currentSoldier();
-        if (!el || el.disabled || !soldier || soldier.specialReadOnly || soldier.outerOps || el.value.trim() !== "") return;
+        if (!el || el.disabled || !soldier || soldier.specialReadOnly || outerOpsLocked(soldier) || el.value.trim() !== "") return;
         const original = uploadedNames.get(soldier.index) ?? soldier.name;
         el.value = original;
         setText("staff-name", original);
@@ -855,13 +893,13 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
             try {
                 // Commit pending form values and recovery together, or neither on failure.
                 const patch = formDirty ? collectCurrentPatch() : {};
-                save.updateStaff(soldier.index, {...patch, clearStatuses: true});
+                save.updateStaff(soldier.index, { ...patch, clearStatuses: true });
                 changesSinceExport = true;
                 formDirty = false;
                 const teamFilter = $("staff-sidebar-team");
                 if (teamFilter && teamFilter.value !== "all") teamFilter.value = "1";
                 selectedIndex = soldier.index;
-                renderSidebar({flush: false});
+                renderSidebar({ flush: false });
                 updateExportButton();
             } catch (err) {
                 console.error(err);
@@ -906,7 +944,10 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         if (!flushCurrentForm()) throw Error("Fix the current staff values before exporting");
         global.VicbossRnDUI?.flushPendingEdits?.();
         global.VicbossRnDWeaponsUI?.flushPendingEdits?.();
+        global.VicbossRnDOtherUI?.flushPendingEdits?.();
+        global.VicbossRnDMechsUI?.flushPendingEdits?.();
 
+        global.PWSEOverviewUI?.flushPendingEdits?.();
         const built = save.buildExport({
             updateLastSaved: $("export-update-last-saved")?.checked ?? true
         });
@@ -920,8 +961,11 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         changesSinceExport = false;
+        global.PWSEOverviewUI?.markExported?.();
         global.VicbossRnDUI?.markExported?.();
         global.VicbossRnDWeaponsUI?.markExported?.();
+        global.VicbossRnDOtherUI?.markExported?.();
+        global.VicbossRnDMechsUI?.markExported?.();
         return built;
     }
 
@@ -943,6 +987,10 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
 
     function setSave(newSave) {
         save = newSave;
+        save?.setUniqueStaffEditing(false);
+        save?.setOuterOpsEditing(false);
+        if ($('enable-outerops-editing')) $('enable-outerops-editing').checked = false;
+        if ($('enable-unique-editing')) $('enable-unique-editing').checked = false;
         uploadedNames = new Map((save?.staff || []).map(soldier => [soldier.index, soldier.name]));
         selectedIndex = null;
         formDirty = false;
@@ -968,6 +1016,36 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
         }
     }
 
+    const outerEditingCheckbox = $('enable-outerops-editing');
+    if (outerEditingCheckbox) {
+        outerEditingCheckbox.checked = false;
+        outerEditingCheckbox.addEventListener('change', () => {
+            if (!flushCurrentForm()) {
+                outerEditingCheckbox.checked = Boolean(save?.outerOpsEditingEnabled);
+                return;
+            }
+            global.VicbossRnDMechsUI?.flushPendingEdits?.();
+            save?.setOuterOpsEditing(outerEditingCheckbox.checked);
+            renderSidebar({ flush: false });
+            global.VicbossRnDMechsUI?.render?.();
+        });
+    }
+
+    const uniqueEditingCheckbox = $('enable-unique-editing');
+    if (uniqueEditingCheckbox) {
+        uniqueEditingCheckbox.checked = false;
+        uniqueEditingCheckbox.addEventListener('change', () => {
+            const enabled = uniqueEditingCheckbox.checked;
+            // Commit allowed pending fields before revoking permission/hiding staff.
+            if (!flushCurrentForm()) {
+                uniqueEditingCheckbox.checked = uniqueEditingEnabled();
+                return;
+            }
+            save?.setUniqueStaffEditing(enabled);
+            renderSidebar({ flush: false });
+        });
+    }
+
     ensureRuntimeStyles();
     installAbilityBars();
     attachFilters();
@@ -976,17 +1054,21 @@ Protected special staff are hidden; OUTER OPS staff cannot be edited.
     bindEditors();
     attachExportButton();
 
+    global.addEventListener('vicboss:other-changed', updateExportButton);
+    global.addEventListener('vicboss:mechs-changed', updateExportButton);
     global.addEventListener('vicboss:items-changed', updateExportButton);
     global.addEventListener('vicboss:weapons-changed', updateExportButton);
+    global.addEventListener('vicboss:profile-changed', updateExportButton);
 
     function createCheckpoint() {
-        const previous = {save, selectedIndex, uploadedNames, formDirty, changesSinceExport};
+        const previous = { save, selectedIndex, uploadedNames, formDirty, changesSinceExport };
         return () => {
-            ({save, selectedIndex, uploadedNames, formDirty, changesSinceExport} = previous);
+            ({ save, selectedIndex, uploadedNames, formDirty, changesSinceExport } = previous);
         };
     }
 
-    global.PWSEStaffUI = Object.freeze({createCheckpoint,
+    global.PWSEStaffUI = Object.freeze({
+        createCheckpoint,
         setSave,
         renderSidebar,
         downloadExport,

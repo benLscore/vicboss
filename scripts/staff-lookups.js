@@ -83,6 +83,12 @@ an exhaustive quote catalogue. Status/special-character overrides are separate.
 
     // Descriptions transcribed from the game by the user; preserve wording and line breaks.
     const SKILL_DESCRIPTIONS = Object.freeze({
+        0x2E: "Effect on Mother Base\n\n- When part of the Mess Hall Team, increases morale of all MSF staff.",
+        0x2F: "Effect on Mother Base\n\n- Increases morale of all staff on assigned team.",
+        0x2B: "Effect on Mother Base\n\n- When part of the Combat Unit, the Guerrillas' morale will rise.",
+        0x23: "Effect on Mother Base\n\n- When part of R&D Team, a development division for bipedal weapons will be established.",
+        0x2C: "Effect on Mother Base\n\n- AI can be installed on Metal Gear ZEKE.",
+
         0x01: "Effect on Missions\n\n- Compliments allies when they neutralize enemies.\n- PSYCHE rises for the soldier who was complimented.\n- Be aware that players cannot achieve an S rank with the use of a Battle Cry.",
         0x02: "Effect on Missions\n\n- Chance of neutralizing enemy requests for backup increases.\n- Effects are amplified in proportion to number of people with this skill.\n- Support Rank is increased when requesting support from Mother Base.",
         0x03: "Effect on Missions\n\n- Increases damage dealt by CQC.\n- Increases damage when firing at enemy's hands or feet.\n- Allows player to take down enemy soldiers by rolling.\n- Shortens time required to sync with allies.\n- Effectiveness of all actions excluding Rolling and Snake Sync are amplified in proportion to number of people with same skill.",
@@ -1057,7 +1063,21 @@ an exhaustive quote catalogue. Status/special-character overrides are separate.
         return DESCRIPTION_BY_SELECTOR[selectorHex(bytes)] ?? null;
     }
 
+    // User-transcribed English character quotes; independent of ordinary quote seeds.
+    const SPECIAL_QUOTES_BY_TITLE = Object.freeze({
+        0x14: "We abandoned our countries. Nothing more.",
+        "21": "My name is Paz, and I'll do anything to protect my namesake.",
+        "22": "We're not mercenaries. We're not a foreign legion. MSF's a business. A new kind of business.",
+        "25": "If you see any UMAs, you tell me, OK?\n\nLike ancient dinosaurs and rare monsters and stuff.\n\nWhen I grow up, I wanna be a hunter.",
+        "26": "You need a special talent to become cacique. It takes someone great to unite all of las compas.",
+        "28": "I've been thinking of giving up on studying birds and learning to fly myself.\n\nWant to hear my quetzal call?",
+        "27": "My father worked on the Manhattan Project.\n\nIn a lifetime of research, he produced two things. The illusion of peace through deterrence...\n\nAnd me and my useless legs.\n\nOne way or the other, I had to face up to the nukes.",
+        "24": "Why was a legendary hero forced to betray her country? Why was she targeted for assassination by you, her most beloved disciple?\n\nI've no use for fabrications.\n\nI want the truth... The Boss's last will.",
+        "87": "70% of my existence is made of movies.\n\nIt is up to you to decide what to do with the remaining 30%."
+});
+
     global.PWSEStaffLookups = Object.freeze({
+        SPECIAL_QUOTES_BY_TITLE,
         TITLE_NAMES,
         SPECIAL_ONLY_TITLE_IDS,
         SKILL_NAMES,

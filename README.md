@@ -1,10 +1,25 @@
 # Vicboss - Peace Walker Save Editor
 
-Vicboss (pronounced "vic" as in "victory" - boss) is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, edit Weapons and Items, and track codename progression.
+Vicboss (pronounced "vic" as in "victory" - boss) is a save editor for The PC version of Metal Gear Solid: Peace Walker. The editor currently allows you to edit Mother Base staff members, edit R&D (Weapons/Items/Mechs/Other), and track codename progression.
 
 The name "Vicboss" comes from "Vic Boss", a nickname given to Big Boss in the story of Peace Walker.
 
 Changelog
+
+v1.3.0
+- Added Mechs editor
+    - View all Armored Vehicles, Tanks and Attack Choppers
+    - View / edit every mech's LIFE
+    - Add / remove mechs
+- Added Other editor
+    - View all Key Items, Bullets and Uniforms
+    - Unlock all Key Items and Uniforms
+    - Unlock all Bullets and edit stock level
+- Added Advanced settings
+    - Enable UNQ character editing
+    - Enable OUTER OPS editing
+    - Change profile name
+- Fixed issue where I referred to the Transfarring mod as Transfarmer (a different Peace Walker mod)
 
 v1.2.1
 - Added Database, a collection of informational pages for Vicboss and Peace Walker
@@ -23,7 +38,7 @@ v1.2.0
 
 v1.1.1
 - Replaced bloated .ttf file with .woff2 file
-- Added functionality where if you clear the name edit field, the name will revert to it's saved value (in case of accidental changes)
+- Added functionality where if you clear the name edit field, the name will revert to its saved value (in case of accidental changes)
 - Improved responsivity
 - Improved upload validation
 
@@ -80,13 +95,13 @@ The overview category features most of what the save selection screen displays, 
 - GMP
 - Last mission completed
 
-This category includes the "Export Save" button to download your edited save file. It also includes a checkbox that, when ticked, changes the "Last Saved" timestamp of the save file to the current date and time. This feature is included because editing a save file that is currently in the save folder, then downloading the new save file into the save folder, will result in the old and new save files looking identical to eachother. In my testing, the save selection screen seems to order save files by their system "date modified" instead of the save file's "Last saved" value, however to avoid confusion, I have added the functionality to alter the timestamp so that edited save files appear as the most recent.
+This category includes the "Export Save" button to download your edited save file. Once you have made all the changes you want, go to the Overview category and click the export button to download your new save.
 
 ### Staff
 
 The staff category features a full staff editor, where details / values of almost every staff member can be altered.
 
-Staff members that are currently dispatched on OUTER OPS in-game cannot be edited; this is due to stability reasons as staff members can change stats / become injured / even die while on OUTER OPS. Also, unique characters (Miller, Chico, Amanda etc.) cannot be edited; this is because unique characters (including Hideo, even though he is listed as a Normal staff member) have special game logic which means that they cannot be edited in the same way that other staff members can. Editing unique characters could also interfere with story progression, so they do not appear in the staff editor.
+Staff members that are currently dispatched on OUTER OPS in-game cannot be edited; this is due to stability reasons as staff members can change stats / become injured / even die while on OUTER OPS. Also, unique characters (Miller, Chico, Amanda etc.) cannot be edited; this is because unique characters (including Hideo, even though he is listed as a Normal staff member) have special game logic which means that they cannot be edited in the same way that other staff members can. Editing unique characters could also interfere with story progression, so they do not appear in the staff editor. However, if you would like to edit staff members who are in OUTER OPS or are unique, there are settings in Advanced that allow this.
 
 The staff category has a sidebar on the left-hand side. The top part of the sidebar contains a search feature, where staff members can be filtered by the team in which they are currently located in, and by their name. The bottom part of the sidebar contains a list of staff members matching the critera of your search.
 
@@ -112,9 +127,11 @@ Finally, staff skills can be edited. There are four skill slots; although there 
 
 ### R&D
 
-The R&D category lets you edit information relating to your Mother Base's R&D department. R&D is currently split into two; Weapons and Items.
+The R&D category lets you edit information relating to your Mother Base's R&D department. R&D is split into the four categories that it appears as in-game: Weapons, Items, Mechs and Other.
 
 Every weapon in the game is displayed, split into five ranks. Weapons can be filtered by category (Handguns, Shotguns, etc.) and each category includes a percentage amount of weapons developed. You can edit the development status of each, the usage level (choose from LVL 1, 2 or 3), and the Stock level (for weapons that have a stock level). Item editing is similar; you can edit the development status, and stock level of each. Some items can only have a stock level of 1, for example the Binoculars and the Surround Indicator. Since ranks are usually dependent on the previous rank, and can also be dependent on other weapons, the editor does not allow for weapons/items to be "undeveloped" if another rank depends on it, since this is not possible in-game. There are also buttons to make 100% completion easier; both weapons and items have a Develop All and Max Inventory Level feature, and Weapons has a Max Usage Level feature.
+
+Every mech you have stored is displayed. You can add any type of mech, including Custom variants, within the 50-mech limit set by the game. You can edit each mech's LIFE value (measured from 1-100%) and remove any mech. Mechs that are currently deployed to OUTER OPS are displayed, however they cannot be edited (this is for stability reasons; to edit mechs deployed to OUTER OPS, change the settings in the Advanced category). Every item/material in the "Other" section of R&D can also be edited. You can set any Key Item (mostly Design Specs), Bullet type or Uniform to "unlocked". You can also edit the stock level of any bullet, from 0-9999.
 
 ### Codenames
 
@@ -129,6 +146,19 @@ The codenames category displays all the information you need for obtaining diffe
 - The codenames and codename ranks you have obtained
 - What you need to do to get the four special codenames (FOX, HOUND, DOBERMAN, FOXHOUND)
 
+### Advanced
+
+This category contains some additional functionality / settings that do not fit anywhere else. These settings aren't intended for normal use, and using them could result in the game acting strange or the save file becoming corrupted, so use these settings with caution.
+
+The first setting, when ticked, changes the "Last Saved" timestamp of the save file to the current date and time. This feature is included because editing a save file that is currently in the save folder, then downloading the new save file into the save folder, will result in the old and new save files looking identical to eachother. In my testing, the save selection screen seems to order save files by their system "date modified" instead of the save file's "Last saved" value, meaning that the newest file will always be displayed at the top. However, to avoid confusion, I have added the functionality to alter the timestamp so that edited save files appear as the most recent.
+
+The second setting allows for staff members with the UNQ tag (Miller, Chico, Amanda, etc.), and Hideo, to be editable. The reason UNQ staff are not editable by default is because they have special game logic associated with them that makes editing some information impossible. For example, quotes for Unique characters and Hideo are set by the game, no matter what you set the quote as in the save file. Ticking this checbox allows you to edit these staff member's Abilities, LIFE, PSYCHE and GMP only. 
+Hideo is not a UNQ staff member, however has a lot of the weirdness that other UNQ staff have so is included in this list. UNQ staff are not affected by Morale, however Hideo is.
+
+"Enable OUTER OPS editing" allows for the details of staff members currently in an OUTER OPS team, as well as mechs currently in an OUTER OPS team, to be edited. This is not allowed by default as the save file protects these soldiers/mechs, and this may interfere with missions that these units are currently deployed to.
+
+Finally, the editor allows for you to change the name associated with your save file. The name can be from 1-15 characters, and accepts letters/numbers but only accepts certain symbols.
+
 ### Database
 
 Database is a collection of informational pages, which holds information about Vicboss and guides for Peace Walker. This can be accessed at the top-left of the editor. It currently includes guides for beating mech fights, beating AI Weapon fights, and getting the true ending / what to do in the postgame.
@@ -139,8 +169,8 @@ Vicboss does not use any kind of server or persistant storage; save files are pr
 
 ## Limitations and upcoming features
 
-- Unique characters (and Hideo) will not appear in the staff editor, as they use special game logic that makes editing them inconsistent
-- Portraits are selected from a labelled dropdown; portrait images are not included
+- Portraits are selected from a labeled dropdown; portrait images are not included
+- The Gold T-Shirt and Love Box outfits are special bonuses that are not stored in the save file but determined by the game's code, so are not available to edit in the Outfit editor.
 - Heroism may be directly editable in a future version; this may not be the case for Camaraderie and GMP as they are cumulative values that can't be directly edited
 - More categories, e.g. for viewing/editing insignias, are planned to be implemented in future versions
 
@@ -151,4 +181,3 @@ The custom Peace Walker font was created by gleeson: https://gleeson.itch.io/pea
 This codename guide was extremely helpful when developing the codename tracker: https://gamefaqs.gamespot.com/boards/960566-metal-gear-solid-peace-walker/56113639
 
 The Peace Walker Field Guide is an amazing resource that a lot of Database is based on: https://mgspw.pages.dev/
-
