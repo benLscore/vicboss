@@ -1,3 +1,10 @@
+/* 
+
+|| General Styles
+
+*/
+
+
 /* Peace Walker font */
 @font-face {
     font-family: peaceWalker;
@@ -65,6 +72,12 @@ td, th {
 th {
     background-color: white;
 }
+
+/* 
+
+|| Page Contents
+
+*/
 
 /* Table of contents */
 

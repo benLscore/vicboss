@@ -1,3 +1,10 @@
+/* 
+
+|| General Styles
+
+*/
+
+
 /* Peace Walker font */
 @font-face {
     font-family: peaceWalker;
@@ -54,10 +61,17 @@ body {
     min-height: 100vh;
 }
 
-/* Ensure list text does not clip out of the screen */
-#upload-container ul li {
-    word-break: break-word;
+table {
+    border-collapse: collapse;
+    font-size: 1rem;
 }
+
+td,
+th {
+    border: 1px solid black;
+}
+
+
 
 /* Info tip hover button */
 
@@ -114,6 +128,13 @@ body {
 }
 
 
+/* 
+
+|| Upload Container
+
+*/
+
+
 /* Information page links */
 .link-container {
     margin: 20px 0;
@@ -133,6 +154,10 @@ fieldset {
     color: red;
 }
 
+/* Ensure list text does not clip out of the screen */
+#upload-container ul li {
+    word-break: break-word;
+}
 
 /* Legal */
 .disclaimer {
@@ -152,6 +177,14 @@ fieldset {
     opacity: 0.5;
     filter: grayscale(1);
 }
+
+
+/* 
+
+|| Save Editor
+
+*/
+
 
 /* The actual save editor container */
 #save-editor {
@@ -218,7 +251,13 @@ fieldset {
     cursor: pointer;
 }
 
-/* Overview category */
+
+/* 
+
+|| Overview Category 
+
+*/
+
 
 #overview {
     height: 100%;
@@ -285,11 +324,6 @@ fieldset {
 }
 
 .overview-export {
-    /* display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    justify-content: center; */
-
     max-width: 60%;
     margin: auto;
 }
@@ -306,7 +340,13 @@ fieldset {
     font-size: 1.8rem;
 }
 
-/* Staff category */
+
+/* 
+
+|| Staff Category 
+
+*/
+
 
 /* Staff category has a sidebar, so slightly different styling than other categories*/
 #staff {
@@ -382,7 +422,7 @@ fieldset {
 }
 
 /* Display an overlay on staff members currently dispatched on OUTER OPS */
-/* For stability reasons, these staff members cannot be edited yet */
+/* These staff can only be edited when editing is enabled in Advanced */
 #staff-outerops-overlay {
     position: absolute;
     inset: 0;
@@ -557,17 +597,36 @@ fieldset {
     width: 50px;
 }
 
-/* Codename tracker category */
-
-table {
-    border-collapse: collapse;
-    font-size: 1rem;
+/* Staff portraits: native resolution, no trimming or enlargement. */
+.staff-portrait-preview-frame {
+    width: 128px;
+    height: 128px;
+    margin: 0.6rem auto 0;
+    background: #c9c9b3;
+    display: grid;
+    place-items: center;
+}
+#staff-portrait-preview {
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+}
+#staff-portrait-preview[hidden], #staff-portrait-preview-status[hidden] {
+    display: none;
+}
+#staff-portrait-preview-status {
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 0.3rem;
 }
 
-td,
-th {
-    border: 1px solid black;
-}
+
+/* 
+
+|| Codename Category
+
+*/
+
 
 #codename {
     padding: 0 30px;
@@ -666,7 +725,13 @@ th {
     margin: auto;
 }
 
-/* RnD */
+
+/* 
+
+|| RnD Category
+
+*/
+
 
 #rnd {
     height: 100%;
@@ -828,7 +893,7 @@ th {
     box-sizing: border-box;
 }
 
-/* Captured mechs are individual records, including duplicate models. */
+/* Captured mechs are individual records, including duplicate models */
 .rnd-mechs-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -865,165 +930,6 @@ th {
     margin-left: 5px;
 }
 
-/* Advanced settings */
-
-#advanced {
-    padding: 0px 30px;
-}
-
-#advanced h2 {
-    font-family: peaceWalker;
-    font-size: 2.5rem;
-    margin: 15px 0;
-}
-
-.checkbox-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Mobile Styles */
-
-@media (max-width: 768px) {
-
-    main {
-        margin: 10px;
-        font-size: 1rem;
-    }
-
-    h1 {
-        font-size: 2.5rem;
-    }
-
-    #saveFile {
-        width: 100%;
-    }
-
-    #save-editor {
-        max-width: 95%;
-    }
-
-    .save-editor-content {
-        width: 100%;
-        box-shadow: none;
-    }
-
-    /* Shrink tabs and bring them closer together */
-
-    .tabs {
-        gap: 0;
-    }
-
-    .tab {
-        padding: 0 10px;
-        font-size: 1rem;
-        clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
-    }
-
-    /* Overview */
-
-    #overview {
-        text-wrap: wrap;
-    }
-
-    .overview-main {
-        flex-wrap: wrap;
-        height: 100%;
-        padding: 15px 0;
-
-        justify-content: center;
-        gap: 30px;
-    }
-
-    .overview-secondary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        width: 90%;
-    }
-
-    /* Display elements top-to-bottom instead of side-by-side */
-    .overview-export {
-        grid-template-columns: 1fr;
-    }
-
-    /* Staff */
-
-    #staff-sidebar {
-        width: 100px;
-    }
-
-    .staff-sidebar-search {
-        font-size: 0.8rem;
-    }
-
-    #staff-sidebar-team,
-    #staff-sidebar-name {
-        width: 95%;
-    }
-
-    .staff-sidebar-staff {
-        font-size: 1rem;
-    }
-
-    .staff-main-details {
-        flex-wrap: wrap;
-    }
-
-    #staff-name {
-        font-size: 2.5rem;
-        word-break: break-word;
-    }
-
-    .staff-abilities {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-    }
-
-    .staff-other-details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    #staff-quote-choice {
-        width: 90%;
-    }
-
-    .staff-skills {
-        gap: 10px;
-
-    }
-
-    .staff-skills select {
-        width: 100%;
-    }
-
-    /* Codenames */
-
-    .weapons-takedowns {
-        margin: 0;
-    }
-
-    /* Allow tables to be scrollable horizontally when there isn't enough space */
-    .table-container {
-        overflow-x: auto;
-        width: 100%;
-    }
-
-    .weapons-takedowns,
-    .codename-ranks {
-        flex-wrap: wrap;
-    }
-
-    #codename table {
-        font-size: 0.9rem;
-    }
-
-}
-
 .rnd-bulk-actions {
     display: flex;
     flex-wrap: wrap;
@@ -1031,7 +937,14 @@ th {
     gap: 0.75rem;
 }
 
-/* Insignias */
+
+/* 
+
+|| Insignias Category
+
+*/
+
+
 #insignias {
     height: 100%;
     overflow: auto;
@@ -1073,7 +986,14 @@ th {
     color: #a00;
 }
 
-/* ZEKE */
+
+/* 
+
+|| ZEKE Category
+
+*/
+
+
 #zeke {
     height: 100%;
     overflow: auto;
@@ -1268,25 +1188,176 @@ th {
     font-weight: 700;
 }
 
-/* Staff portraits: native resolution, no trimming or enlargement. */
-.staff-portrait-preview-frame {
-    width: 128px;
-    height: 128px;
-    margin: 0.6rem auto 0;
-    background: #c9c9b3;
-    display: grid;
-    place-items: center;
+
+/* 
+
+|| Advanced Category
+
+*/
+
+
+#advanced {
+    padding: 0px 30px;
 }
-#staff-portrait-preview {
-    width: 128px;
-    height: 128px;
-    object-fit: contain;
+
+#advanced h2 {
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+    margin: 15px 0;
 }
-#staff-portrait-preview[hidden], #staff-portrait-preview-status[hidden] {
-    display: none;
+
+.checkbox-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
-#staff-portrait-preview-status {
-    font-size: 0.8rem;
-    text-align: center;
-    padding: 0.3rem;
+
+/* Mobile Styles */
+
+@media (max-width: 768px) {
+
+
+    /* || Mobile General Styles */
+
+
+    main {
+        margin: 10px;
+        font-size: 1rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    #saveFile {
+        width: 100%;
+    }
+
+    #save-editor {
+        max-width: 95%;
+    }
+
+    .save-editor-content {
+        width: 100%;
+        box-shadow: none;
+    }
+
+    /* Shrink tabs and bring them closer together */
+
+    .tabs {
+        gap: 0;
+    }
+
+    .tab {
+        padding: 0 10px;
+        font-size: 1rem;
+        clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+    }
+
+
+    /* || Mobile Overview Category */
+
+
+    #overview {
+        text-wrap: wrap;
+    }
+
+    .overview-main {
+        flex-wrap: wrap;
+        height: 100%;
+        padding: 15px 0;
+
+        justify-content: center;
+        gap: 30px;
+    }
+
+    .overview-secondary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        width: 90%;
+    }
+
+    /* Display elements top-to-bottom instead of side-by-side */
+    .overview-export {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* || Mobile Staff Category */
+
+
+    #staff-sidebar {
+        width: 100px;
+    }
+
+    .staff-sidebar-search {
+        font-size: 0.8rem;
+    }
+
+    #staff-sidebar-team,
+    #staff-sidebar-name {
+        width: 95%;
+    }
+
+    .staff-sidebar-staff {
+        font-size: 1rem;
+    }
+
+    .staff-main-details {
+        flex-wrap: wrap;
+    }
+
+    #staff-name {
+        font-size: 2.5rem;
+        word-break: break-word;
+    }
+
+    .staff-abilities {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .staff-other-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    #staff-quote-choice {
+        width: 90%;
+    }
+
+    .staff-skills {
+        gap: 10px;
+
+    }
+
+    .staff-skills select {
+        width: 100%;
+    }
+
+    /* || Mobile Codenames Category */
+
+    .weapons-takedowns {
+        margin: 0;
+    }
+
+    /* Allow tables to be scrollable horizontally when there isn't enough space */
+    .table-container {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .weapons-takedowns,
+    .codename-ranks {
+        flex-wrap: wrap;
+    }
+
+    #codename table {
+        font-size: 0.9rem;
+    }
+
 }
+
