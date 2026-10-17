@@ -57,7 +57,7 @@
 
     function installSave(nextSave) {
         const controllers = [global.PWSEOverviewUI, global.PWSEStaffUI,
-            global.PWSECodenameUI, global.VicbossRnDUI, global.VicbossRnDWeaponsUI, global.VicbossRnDOtherUI, global.VicbossRnDMechsUI];
+            global.PWSECodenameUI, global.VicbossInsigniasUI, global.VicbossZekeUI, global.VicbossRnDUI, global.VicbossRnDWeaponsUI, global.VicbossRnDOtherUI, global.VicbossRnDMechsUI];
         const restoreControllers = controllers.map(controller => controller.createCheckpoint());
         const roots = [$('save-editor'), $('upload-container')].filter(Boolean).map(captureNode);
         const focus = document.activeElement;
@@ -65,6 +65,7 @@
             controllers.forEach(controller => controller.setSave(nextSave));
             global.VicbossSession.resetViewForNewSave();
             $('upload-container').style.display = 'none';
+            $('upload-deco-image').style.display = 'none';
             $('save-editor').style.display = 'flex';
         } catch (error) {
             restoreControllers.forEach(restore => restore());

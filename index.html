@@ -30,6 +30,7 @@
     <link rel="canonical" href="https://benlscore.github.io/vicboss/">
     <meta property="og:url" content="https://benlscore.github.io/vicboss/">
 
+    <script src="scripts/analytics.js" defer></script>
 </head>
 
 <body>
@@ -83,6 +84,7 @@
 
         </div>
 
+        <img src="media/deco.jpg" alt="" id="upload-deco-image">
 
         <!-- Main container that displays when the save file has been loaded -->
 
@@ -104,6 +106,13 @@
                 <button type="button" class="tab" id="tab-codename" role="tab" data-editor-tab="codename"
                     aria-controls="codename" aria-selected="false" tabindex="-1"
                     onclick="show('codename')">CODENAMES</button>
+
+                <button type="button" class="tab" id="tab-insignias" role="tab" data-editor-tab="insignias"
+                    aria-controls="insignias" aria-selected="false" tabindex="-1"
+                    onclick="show('insignias')">INSIGNIAS</button>
+
+                <button type="button" class="tab" id="tab-zeke" role="tab" data-editor-tab="zeke" aria-controls="zeke"
+                    aria-selected="false" tabindex="-1" onclick="show('zeke')">ZEKE</button>
 
                 <button type="button" class="tab" id="tab-advanced" role="tab" data-editor-tab="advanced"
                     aria-controls="advanced" aria-selected="false" tabindex="-1"
@@ -206,7 +215,8 @@
 
                             <ul>
                                 <li>Save the file back into the "ww" folder</li>
-                                <li>Do not rename the file - keep the name that it saves as</li>
+                                <li>Do not rename the file or overwrite an existing save file - keep the name that it
+                                    saves as</li>
                                 <li>Restart the game or load a save file then return to the title screen to update the
                                     save file viewer
                                 </li>
@@ -348,6 +358,11 @@
                             <div class="staff-portrait-view">
                                 <label for="staff-portrait-choice">Portrait:</label> <br>
                                 <select id="staff-portrait-choice"></select>
+                                <div class="staff-portrait-preview-frame">
+                                    <img id="staff-portrait-preview" width="128" height="128"
+                                        alt="Selected staff portrait" hidden>
+                                    <span id="staff-portrait-preview-status">Portrait unavailable</span>
+                                </div>
                             </div>
                             <p><label for="staff-title">Title:</label> <br> <select id="staff-title"></select></p>
 
@@ -356,8 +371,7 @@
                                 <p>Sick: <span id="staff-sick"></span></p>
                                 <p>Wounded: <span id="staff-wounded"></span></p>
                                 <p>PTSD: <span id="staff-ptsd"></span></p>
-                                <button type="button" id="staff-clear-statuses"
-                                    >Clear Statuses</button>
+                                <button type="button" id="staff-clear-statuses">Clear Statuses</button>
                             </div>
 
                         </div>
@@ -452,9 +466,8 @@
                     <section class="codename-tracker">
                         <h2>Codename Tracker</h2>
 
-                        <p>A guide on getting all of the codenames is available <a
-                                href="https://gamefaqs.gamespot.com/boards/960566-metal-gear-solid-peace-walker/56113639"
-                                target="_blank">here</a></p>
+                        <p>The Vicboss guide on getting every codename is available <a
+                                href="database/codenameguide.html" target="_blank">here</a></p>
 
                         <section>
 
@@ -484,7 +497,8 @@
                                             <button type="button" class="info-tip-button"
                                                 aria-label="About Grenade Launcher kills"
                                                 aria-describedby="grenade-launcher-help">i</button>
-                                            <span class="info-tip-text" id="grenade-launcher-help" role="tooltip">Grenade
+                                            <span class="info-tip-text" id="grenade-launcher-help"
+                                                role="tooltip">Grenade
                                                 Launcher kills do not count towards the total lethal takedowns or
                                                 codename eligibility.</span>
                                         </span>
@@ -650,6 +664,126 @@
                         </section>
                     </section>
 
+                    <section aria-labelledby="codename-edit-heading">
+                        <h3 id="codename-edit-heading">Codename Editor</h3>
+                        <label><input type="checkbox" id="enable-codename-editing"> Enable Editing</label>
+                        <div id="codename-editor" hidden>
+                            <p id="codename-edit-error" role="alert" hidden></p>
+                            <div style="overflow-x:auto">
+                                <table class="takedowns-editor-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Weapon type</th>
+                                            <th>Lethal</th>
+                                            <th>Incapacitations</th>
+                                            <th>Tranquilizations</th>
+                                            <th>Stuns</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="codename-edit-counters"></tbody>
+                                </table>
+                            </div>
+                            <table class="codename-editor-table">
+                                <thead>
+                                    <tr>
+                                        <th>Codename</th>
+                                        <th>Highest obtained rank</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="codename-edit-ranks"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div role="tabpanel" aria-labelledby="tab-insignias" id="insignias" style="display:none;">
+                    <h2>Insignias</h2>
+                    <p>Obtained: <span id="insignia-count">—</span> / 84</p>
+                    <p><button type="button" id="award-all-insignias" disabled>Award All Insignias</button></p>
+                    <p>Removed insignias may be awarded again after a mission if their requirements are still met.
+                        Editing ownership does not increase your Heroism.</p>
+                    <p id="insignia-error" role="alert" hidden></p>
+                    <div class="insignia-table-scroll">
+                        <table class="insignia-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Obtained</th>
+                                    <th scope="col">Insignia</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Note</th>
+                                </tr>
+                            </thead>
+                            <tbody id="insignia-rows"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div role="tabpanel" aria-labelledby="tab-zeke" id="zeke" style="display:none;">
+                    <h2>ZEKE</h2>
+                    <p>The Vicboss guide on defeating AI Weapon bosses and developing ZEKE is available <a
+                            href="database/aiguide.html" target="_blank">here</a>.</p>
+                    <p id="zeke-status" role="status">No save loaded</p>
+                    <p id="zeke-error" role="alert" hidden></p>
+
+                    <h3>Parts</h3>
+                    <p><span id="zeke-count">—</span> / 49 parts obtained.</p>
+                    <div class="zeke-actions">
+                        <button type="button" id="zeke-add-all" disabled>Add All Parts</button>
+                        <button type="button" id="zeke-heal" disabled>Heal All Parts</button>
+                    </div>
+                    <div id="zeke-parts" class="zeke-parts"></div>
+
+                    <h3>AI Boards</h3>
+                    <p>Numbers run down each column, then continue in the next column. Filled cells are obtained; a dot
+                        marks NEW boards.</p>
+                    <div class="zeke-actions"><button type="button" id="zeke-unlock-boards" disabled>Unlock All AI
+                            Boards</button></div>
+                    <p id="zeke-board-detail" role="status">Select or hover over a board to see its status and available
+                        boss fights.</p>
+                    <div id="zeke-boards" class="zeke-boards"></div>
+
+                    <h3>Recommended Boss Fights</h3>
+                    <p>Different bosses can drop the same boards, however farming easier bosses for the same boards that
+                        harder bosses can drop saves time and effort. The table below shows you the weakest bosses to
+                        grind each board for.</p>
+                    <div class="zeke-table-scroll zeke-recommended">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Boss</th>
+                                    <th>Mobility</th>
+                                    <th>Sense</th>
+                                    <th>Attack</th>
+                                    <th>Control</th>
+                                </tr>
+                            </thead>
+                            <tbody id="zeke-recommended-rows"></tbody>
+                        </table>
+                    </div>
+
+                    <details class="zeke-source-guide">
+                        <summary>Which bosses provide which boards?</summary>
+
+                        <div class="zeke-table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Boss</th>
+                                        <th>Mobility</th>
+                                        <th>Sense</th>
+                                        <th>Attack</th>
+                                        <th>Control</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="zeke-source-rows"></tbody>
+                            </table>
+                        </div>
+
+                        <p><a href="https://www.reddit.com/r/metalgearsolid/comments/18ky8po/peace_walker_ai_memory_board_fight_list_tips/"
+                                target="_blank" rel="noopener noreferrer">Source</a>
+                        </p>
+
+                    </details>
                 </div>
 
                 <div role="tabpanel" aria-labelledby="tab-advanced" id="advanced" style="display:none;">
@@ -755,6 +889,8 @@
     <script src="scripts/rnd-other.js"></script>
     <script src="scripts/rnd-weapons.js"></script>
     <script src="scripts/rnd-mechs.js"></script>
+    <script src="scripts/insignias.js"></script>
+    <script src="scripts/zeke.js"></script>
     <script src="scripts/core.js"></script>
 
     <script src="scripts/staff-edit-ui.js"></script>
@@ -764,6 +900,8 @@
     <script src="scripts/rnd-weapons-ui.js"></script>
     <script src="scripts/rnd-other-ui.js"></script>
     <script src="scripts/rnd-mechs-ui.js"></script>
+    <script src="scripts/insignias-ui.js"></script>
+    <script src="scripts/zeke-ui.js"></script>
     <script src="scripts/session-ui.js"></script>
 
     <script src="scripts/upload-ui.js"></script>

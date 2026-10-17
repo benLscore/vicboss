@@ -14,6 +14,14 @@
     font-display: swap;
 }
 
+/* Bold font */
+@font-face {
+    font-family: "M PLUS 1";
+    src: url("../fonts/MPLUS1-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+}
+
 main {
     border: 2px solid lightgrey;
     margin: 30px;
@@ -25,6 +33,9 @@ main {
     /* Ensure fonts render consistently across browsers */
     font-synthesis: none;
     text-rendering: geometricPrecision;
+
+    /* Allow for decorative image to be positioned */
+    position: relative;
 }
 
 h1 {
@@ -122,11 +133,24 @@ fieldset {
     color: red;
 }
 
+
 /* Legal */
 .disclaimer {
     margin-top: 100px;
     max-width: 700px;
     color: darkslategrey;
+}
+
+/* Decorative image at bottom-right when no save has been uploaded */
+#upload-deco-image {
+    position: absolute;
+    height: 500px;
+    right: 0;
+    bottom: 0;
+
+    /* Set image to black and white + slightly transparent */
+    opacity: 0.5;
+    filter: grayscale(1);
 }
 
 /* The actual save editor container */
@@ -170,7 +194,7 @@ fieldset {
     height: 40px;
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    justify-content: space-between;
     /* Ensure that tabs do not appear "floating" above the editor border */
     margin-bottom: -1px;
 }
@@ -615,6 +639,32 @@ th {
     padding: 0 5px;
 }
 
+/* Codename editor */
+
+#enable-codename-editing {
+    margin: 25px 0;
+}
+
+.takedowns-editor-table {
+    margin: auto;
+}
+
+.codename-editor-table {
+    margin: 30px auto;
+}
+
+.takedowns-editor table td,
+.takedowns-editor-table th,
+.codename-editor-table td,
+.codename-editor-table th {
+    padding: 5px 8px;
+}
+
+.takedowns-editor-table input,
+.codename-editor-table select {
+    display: block;
+    margin: auto;
+}
 
 /* RnD */
 
@@ -979,4 +1029,264 @@ th {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
+}
+
+/* Insignias */
+#insignias {
+    height: 100%;
+    overflow: auto;
+    padding: 0 30px;
+    box-sizing: border-box;
+}
+
+#insignias h2 {
+    margin: 15px 0;
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+}
+
+.insignia-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.insignia-table th,
+.insignia-table td {
+    padding: 8px;
+    border: 1px solid #aaa;
+    vertical-align: top;
+}
+
+.insignia-table td:first-child {
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.insignia-table input[type="checkbox"] {
+    cursor: pointer;
+}
+
+#insignia-error {
+    color: #a00;
+}
+
+/* ZEKE */
+#zeke {
+    height: 100%;
+    overflow: auto;
+    padding: 0 30px;
+    box-sizing: border-box;
+}
+
+#zeke h2 {
+    margin: 15px 0;
+    font-family: peaceWalker;
+    font-size: 2.5rem;
+}
+
+/* ZEKE parts and AI boards */
+#zeke {
+    min-width: 0;
+}
+
+.zeke-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin: 1rem 0;
+}
+
+.zeke-parts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: 1rem;
+}
+
+.zeke-part-group {
+    border: 1px solid currentColor;
+    padding: .75rem;
+}
+
+.zeke-part-group h4 {
+    margin: 0 0 .5rem;
+}
+
+.zeke-part-group ul {
+    padding-left: 1.25rem;
+}
+
+.zeke-boards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1.5rem;
+}
+
+/* Space out bottom row and top row of tables */
+.zeke-board-category h4 {
+    margin: 0 0 10px;
+}
+
+.zeke-board-grid {
+    display: grid;
+    grid-template-rows: repeat(10, auto);
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-auto-flow: column;
+    gap: .2rem;
+}
+
+.zeke-board {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+    font: inherit;
+    font-size: .75rem;
+    border: 1px solid #888;
+    background: #eee;
+    color: #555;
+    cursor: help;
+}
+
+.zeke-board.obtained {
+    background: #6a5600;
+    color: white;
+    border-color: #6a5600;
+}
+
+.zeke-board:focus-visible {
+    outline: 3px solid #d36a00;
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+.zeke-source-guide {
+    margin: 1rem 0;
+}
+
+.zeke-source-guide summary {
+    cursor: pointer;
+}
+
+.zeke-table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.zeke-table-scroll table {
+    margin: 1rem auto 0;
+    text-align: center;
+}
+
+.zeke-source-guide th,
+.zeke-source-guide td {
+    padding: .4rem .6rem;
+}
+
+/* Stable ZEKE inventory rows: reserve a slot for every possible part. */
+.zeke-parts {
+    display: block;
+}
+
+.zeke-part-section {
+    margin: 1rem 0;
+    border: 1px solid currentColor;
+    padding: 0.75rem;
+}
+
+.zeke-part-section h4 {
+    margin: 0 0 0.5rem;
+}
+
+.zeke-part-row {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) 9rem minmax(15rem, 2fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid #aaa;
+}
+
+.zeke-part-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.zeke-part-slots {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.3rem;
+}
+
+.zeke-part-slot {
+    display: block;
+    text-align: center;
+    padding: 0.3rem 0;
+    background: #eee;
+    color: #333;
+    border: 1px solid #aaa;
+}
+
+.zeke-part-slot small {
+    display: block;
+    font-size: 0.7rem;
+}
+
+.zeke-part-slot.equipped {
+    border: 2px solid #6a5600;
+    padding: calc(0.3rem - 1px) 0;
+}
+
+.zeke-recommended table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.zeke-recommended th,
+.zeke-recommended td {
+    padding: 0.5rem;
+    border: 1px solid #aaa;
+    text-align: left;
+    vertical-align: top;
+}
+
+@media (max-width: 750px) {
+    .zeke-part-row {
+        grid-template-columns: minmax(0, 1fr) 9rem;
+    }
+
+    .zeke-part-slots {
+        grid-column: 1 / -1;
+    }
+}
+/* Emphasize the OUTER OPS lock only while Advanced editing is disabled. */
+#zeke-status.zeke-editing-locked {
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+/* Staff portraits: native resolution, no trimming or enlargement. */
+.staff-portrait-preview-frame {
+    width: 128px;
+    height: 128px;
+    margin: 0.6rem auto 0;
+    background: #c9c9b3;
+    display: grid;
+    place-items: center;
+}
+#staff-portrait-preview {
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+}
+#staff-portrait-preview[hidden], #staff-portrait-preview-status[hidden] {
+    display: none;
+}
+#staff-portrait-preview-status {
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 0.3rem;
 }

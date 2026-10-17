@@ -287,12 +287,15 @@ class PeaceWalkerSave{
   if(!this.validation.roundTripExact)throw Error('Save encryption round-trip validation failed');
   this._dirty=false;
   this._uniqueStaffEditingEnabled=false;
+  this._codenameEditingEnabled=false;
   this._outerOpsEditingEnabled=false;
   this._profileNameEditingEnabled=false;
   this._editedStaffIndices=new Set();
   this._editedItemIds=new Set();
   this._editedWeaponIds=new Set();
   this._editedOtherIds=new Set();
+  this._editedInsigniaIds=new Set();
+  this._zekeEdited=false;
   this._editedMechSlots=new Set();
   this._refresh();
  }
@@ -305,6 +308,33 @@ class PeaceWalkerSave{
   this.staff=parseStaff(this._plain);
   this.snake=parseStaffRecord(this._plain,-1);
   this.codenameTracker=global.PWSECodenameTracker?.parse(this._plain)||null;
+  this.insignias=global.VicbossInsignias?.parse(this._plain)||null;
+  this.zeke=global.VicbossZeke?.parse(this._plain)||null;
+ }
+ editZeke(action,id){
+  if(!global.VicbossZeke)throw Error('ZEKE module unavailable');
+  const draft=global.VicbossZeke.edit(this._plain,action,id,this._outerOpsEditingEnabled);
+  if(!draft)return false;
+  this._plain=draft;this._dirty=true;this._zekeEdited=true;this._refresh();return true;
+ }
+ awardAllInsignias(){
+  if(!global.VicbossInsignias)throw Error('Insignia module unavailable');
+  const draft=new Uint8Array(this._plain),changed=[];
+  for(const entry of global.VicbossInsignias.entries){
+   if(global.VicbossInsignias.write(draft,entry.id,true))changed.push(entry.id);
+  }
+  if(!changed.length)return 0;
+  changed.forEach(id=>this._editedInsigniaIds.add(id));
+  this._plain=draft;this._dirty=true;this._refresh();
+  return changed.length;
+ }
+ updateInsignia(id,obtained){
+  if(!global.VicbossInsignias)throw Error('Insignia module unavailable');
+  const draft=new Uint8Array(this._plain);
+  if(!global.VicbossInsignias.write(draft,id,obtained))return false;
+  this._editedInsigniaIds.add(id);
+  this._plain=draft;this._dirty=true;this._refresh();
+  return true;
  }
  get uniqueStaffEditingEnabled(){return this._uniqueStaffEditingEnabled}
  setUniqueStaffEditing(enabled){
@@ -332,6 +362,33 @@ class PeaceWalkerSave{
  setOuterOpsEditing(enabled){
   if(typeof enabled!=='boolean')throw Error('OUTER OPS editing must be true or false');
   this._outerOpsEditingEnabled=enabled;
+ }
+ get codenameEditingEnabled(){return this._codenameEditingEnabled}
+ setCodenameEditing(enabled){
+  if(typeof enabled!=='boolean')throw Error('Codename editing must be true or false');
+  this._codenameEditingEnabled=enabled;
+ }
+ updateCodenameCounter(typeId,kind,value){
+  if(!this._codenameEditingEnabled)throw Error('Enable codename editing first');
+  if(![0,1,2,3,4,5,6,7,8,9,11].includes(typeId))throw Error('Unsupported weapon type');
+  const banks={lethal:221,incapacitation:234,tranquilization:247,stun:260};
+  if(!Object.prototype.hasOwnProperty.call(banks,kind))throw Error('Unsupported takedown counter');
+  // User-tested game cap: excess positive counts saturate at 999,999.
+  value=intInRange('Takedowns',value,0,999999);
+  const offset=0x44+0x524C+(banks[kind]+typeId)*0x28+0x10;
+  if(u32(this._plain,offset)===value)return;
+  const draft=new Uint8Array(this._plain);p32(draft,offset,value);
+  this._plain=draft;this._dirty=true;this._refresh();
+ }
+ updateCodenameRank(id,rank){
+  if(!this._codenameEditingEnabled)throw Error('Enable codename editing first');
+  id=intInRange('Codename',id,1,24);rank=intInRange('Rank',rank,0,5);
+  const offset=0x44+0x1BFF1+id-1,old=u8(this._plain,offset);
+  if((old&1)!==0&&((old>>>2)&7)===rank || rank===0&&(old&0x1f)===0)return;
+  // Preserve unknown high bits. New acquisitions/rank changes get the NEW flag.
+  const value=(old&0xe0)|(rank?1|2|(rank<<2):0);
+  const draft=new Uint8Array(this._plain);p8(draft,offset,value);
+  this._plain=draft;this._dirty=true;this._refresh();
  }
  get isDirty(){return this._dirty}
  get editedStaffIndices(){return Object.freeze(Array.from(this._editedStaffIndices).sort((a,b)=>a-b))}
@@ -622,6 +679,8 @@ class PeaceWalkerSave{
   this._editedItemIds.clear();
   this._editedWeaponIds.clear();
   this._editedOtherIds.clear();
+  this._editedInsigniaIds.clear();
+  this._zekeEdited=false;
   this._editedMechSlots.clear();
   this._refresh();
  }
@@ -647,6 +706,9 @@ class PeaceWalkerSave{
    editedWeaponIds:this.editedWeaponIds,
    mechsEdited:this._editedMechSlots.size>0,
    editedMechSlots:Object.freeze([...this._editedMechSlots]),
+   zekeEdited:this._zekeEdited,
+   insigniasEdited:this._editedInsigniaIds.size>0,
+   editedInsigniaIds:Object.freeze([...this._editedInsigniaIds]),
    otherEdited:this._editedOtherIds.size>0,
    editedOtherIds:Object.freeze([...this._editedOtherIds]),
    itemsEdited:this._editedItemIds.size>0,

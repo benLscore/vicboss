@@ -17,7 +17,7 @@ protects staff changes that have not yet been exported.
     }
 
     function hasUnexportedChanges() {
-        return Boolean(global.PWSEOverviewUI?.hasUnexportedChanges?.() || global.PWSEStaffUI?.hasUnexportedChanges?.() || global.VicbossRnDUI?.hasUnexportedChanges?.() || global.VicbossRnDWeaponsUI?.hasUnexportedChanges?.() || global.VicbossRnDOtherUI?.hasUnexportedChanges?.() || global.VicbossRnDMechsUI?.hasUnexportedChanges?.());
+        return Boolean(global.VicbossZekeUI?.hasUnexportedChanges?.() || global.VicbossInsigniasUI?.hasUnexportedChanges?.() || global.PWSECodenameUI?.hasUnexportedChanges?.() || global.PWSEOverviewUI?.hasUnexportedChanges?.() || global.PWSEStaffUI?.hasUnexportedChanges?.() || global.VicbossRnDUI?.hasUnexportedChanges?.() || global.VicbossRnDWeaponsUI?.hasUnexportedChanges?.() || global.VicbossRnDOtherUI?.hasUnexportedChanges?.() || global.VicbossRnDMechsUI?.hasUnexportedChanges?.());
     }
 
     function resetScrollPositions() {
@@ -28,6 +28,8 @@ protects staff changes that have not yet been exported.
             "staff-sidebar-content",
             "staff-content",
             "codename",
+            "insignias",
+            "zeke",
             "rnd"
         ]) {
             const el = $(id);

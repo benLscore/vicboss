@@ -70,8 +70,55 @@ function render(){
    !x.nextRank?"Highest rank already obtained":pointers.join("; ")||"Requirements met - ready to earn in-game"];
  }));
 }
-function setSave(next){save=next||null;render();}
-function createCheckpoint(){const previous=save;return ()=>{save=previous;};}
+let changesSinceExport=false;
+function editError(error){const n=document.getElementById('codename-edit-error');if(n){n.hidden=!error;n.textContent=error?error.message:'';}if(error)console.error(error);}
+function commitCounter(input,finalise=false){
+ if(!save||!save.codenameEditingEnabled||input.dataset.edited!=='true')return;
+ if(input.value.trim()===''||!Number.isFinite(input.valueAsNumber)){
+  if(finalise){
+   const w=save.codenameTracker.weaponTypes.find(w=>w.id===Number(input.dataset.type));
+   input.value=String(input.dataset.kind==='lethal'?w.lethal:w.raw[input.dataset.kind]);
+   delete input.dataset.edited;
+  }
+  return;
+ }
+ const value=Math.max(0,Math.min(999999,Math.trunc(input.valueAsNumber)));
+ input.value=String(value);
+ try{
+  const before=save.codenameTracker;
+  save.updateCodenameCounter(Number(input.dataset.type),input.dataset.kind,value);
+  if(before!==save.codenameTracker){changesSinceExport=true;render();global.dispatchEvent(new Event('vicboss:codenames-changed'));}
+  delete input.dataset.edited;
+  editError(null);
+ }catch(error){editError(error);}
+}
+function flushPendingEdits(){document.querySelectorAll('#codename-edit-counters input').forEach(input=>commitCounter(input,true));}
+function renderEditor(){
+ const host=document.getElementById('codename-editor');if(!host)return;
+ host.hidden=!save?.codenameEditingEnabled;
+ const counters=document.getElementById('codename-edit-counters'),ranks=document.getElementById('codename-edit-ranks');
+ counters.replaceChildren();ranks.replaceChildren();if(!save)return;
+ for(const w of save.codenameTracker.weaponTypes.filter(w=>w.group!==null)){
+  const row=document.createElement('tr'),label=document.createElement('th');label.scope='row';label.textContent=w.label;row.appendChild(label);
+  for(const kind of ['lethal','incapacitation','tranquilization','stun']){
+   const cell=document.createElement('td'),input=document.createElement('input');input.type='number';input.min='0';input.max='999999';input.step='1';input.style.width='8em';
+   input.value=String(kind==='lethal'?w.lethal:w.raw[kind]);input.dataset.type=w.id;input.dataset.kind=kind;input.disabled=!save.codenameEditingEnabled;
+   input.setAttribute('aria-label',w.label+' '+kind);input.addEventListener('input',()=>{input.dataset.edited='true';commitCounter(input);});input.addEventListener('blur',()=>commitCounter(input,true));cell.appendChild(input);row.appendChild(cell);
+  }counters.appendChild(row);
+ }
+ for(const c of save.codenameTracker.codenames){
+  const row=document.createElement('tr'),label=document.createElement('th'),cell=document.createElement('td'),select=document.createElement('select');label.scope='row';label.textContent=c.name;select.setAttribute('aria-label',c.name+' obtained rank');select.disabled=!save.codenameEditingEnabled;
+  for(let i=0;i<=5;i++){const o=document.createElement('option');o.value=i;o.textContent=i?'Rank '+i:'Not obtained';select.appendChild(o);}
+  if(c.acquired&&(c.rank<1||c.rank>5)){const o=document.createElement('option');o.value=c.rank;o.textContent='Existing rank '+c.rank+' (keep)';select.appendChild(o);}
+  select.value=c.acquired?c.rank:0;
+  select.addEventListener('change',()=>{try{save.updateCodenameRank(c.id,Number(select.value));changesSinceExport=true;render();global.dispatchEvent(new Event('vicboss:codenames-changed'));editError(null);}catch(e){editError(e);renderEditor();}});
+  row.appendChild(label);cell.appendChild(select);row.appendChild(cell);ranks.appendChild(row);
+ }
+}
+const editToggle=document.getElementById('enable-codename-editing');
+if(editToggle){editToggle.checked=false;editToggle.addEventListener('change',()=>{flushPendingEdits();save?.setCodenameEditing(editToggle.checked);renderEditor();});}
+function setSave(next){save=next||null;changesSinceExport=false;save?.setCodenameEditing(false);if(editToggle)editToggle.checked=false;editError(null);render();renderEditor();}
+function createCheckpoint(){const previous=save,dirty=changesSinceExport;return ()=>{save=previous;changesSinceExport=dirty;};}
 
-global.PWSECodenameUI=Object.freeze({createCheckpoint,setSave,render});
+global.PWSECodenameUI=Object.freeze({createCheckpoint,setSave,render,flushPendingEdits,hasUnexportedChanges:()=>Boolean(save&&changesSinceExport),markExported:()=>{changesSinceExport=false;}});
 })(window);

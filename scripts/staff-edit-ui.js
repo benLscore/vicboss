@@ -471,6 +471,30 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
         });
     }
 
+    const PORTRAIT_ASSETS = new Set([13847706,13782170,13716634,12209306,12143770,12078234,12012698,11947162,11881626,11816090,11750554,11685018,11619482,10112154,10046618,9981082,9915546,9850010,9784474,9718938,9653402,9587866,9522330,8015002,7949466,7883930,7818394,7752858,7687322,7621786,7556250,7490714,7425178,5917850,5852314,5786778,5721242,5655706,5590170,5524634,5459098,5393562,5328026,8014999,7949463,7883927,7818391,7752855,7687319,7621783,7556247,7490711,7425175,5917847,5852311,5786775,5721239,5655703,5590167,5524631,5459095,5393559,5328023,3820695,3755159,3689623,3624087,3558551,3493015,3427479,3361943,3296407,3230871,1723543,1658007,1592471,1526935,1461399,1395863,1330327,1264791,1199255,1133719,16403606,16338070,16272534,16206998,16141462,16075926,16010390,15944854,15879318,15813782,14306454,14240918,14175382,14109846,14044310,13978774,13913238,13847702,13782166,13716630,12209302,12143766,12078230,12012694,11947158,11881622,11816086,11750550,11685014,11619478,10112150,10046614,9981078,9915542,9850006,9784470,9718934,9653398,9587862,9522326,8014998,7949462,7883926,7818390,7752854,7687318,7621782,7556246,7490710,7425174,5917846,5852310,5786774,5721238,5655702,5590166,5524630,5459094,5393558,5328022,8014995,7949459,7883923,7818387,7752851,7687315,7621779,7556243,7490707,7425171,5917843,5852307,5786771,5721235,5655699,5590163,5524627,5459091,5393555,5328019,3820691,3755155,3689619,3624083,3558547,3493011,3427475,3361939,3296403,3230867,1723539,1658003,1592467,1526931,1461395,1395859,1330323,1264787,1199251,1133715,16403602,16338066,16272530,16206994,16141458,16075922,16010386,15944850,15879314,15813778,14306450,14240914,14175378,14109842,14044306,13978770,13913234,13847698,13782162,13716626,12209298,12143762,12078226,12012690,11947154,11881618,11816082,11750546,11685010,11619474,10112146,10046610,9981074,9915538,9850002,9784466,9718930,9653394,9587858,9522322,8014994,7949458,7883922,7818386,7687314,7621778,7556242,7490706,7425170,5917842,5852306,5786770,5721234,5655698,5590162,5524626,5459090,5393554,5094546,5029010,4963474,4897938,4832402,4766866,4701330,4635794,4570258,7425196,5917868,5852332,5786796,5721260,5655724,5590188,5524652,5459116,5393580,5328044,3820716,3755180,3689644,3624108,3558572,3493036,3427500,3361964,3296428,3230892,1723564,1658028,1592492,1526956,1461420,1395884,1330348,1264812,1199276,1133740,16403627,16338091,16272555,16207019,16141483,16075947,16010411,15944875,15879339,15813803,14306475,14240939,14175403,14109867,14044331,13978795,13913259,13847723,13782187,9363674]);
+
+    function updatePortraitPreview(soldier, code = soldier?.portraitCode) {
+        const image = $('staff-portrait-preview');
+        const status = $('staff-portrait-preview-status');
+        if (!image) return;
+        // Story characters use the BC texture family for the same set/face pair.
+        const actualCode = Number(code) >>> 0;
+        const storyCode = ((actualCode & 0x00ff00ff) | 0xbc00) >>> 0;
+        const resolved = PORTRAIT_ASSETS.has(actualCode) ? actualCode
+            : soldier?.specialReadOnly && PORTRAIT_ASSETS.has(storyCode) ? storyCode : null;
+        image.hidden = true;
+        image.onload = () => { image.hidden = false; if (status) status.hidden = true; };
+        image.onerror = () => {
+            image.hidden = true;
+            if (status) { status.textContent = 'Portrait unavailable'; status.hidden = false; }
+        };
+        if (status) { status.textContent = resolved === null ? 'Portrait unavailable' : 'Loading portrait…'; status.hidden = false; }
+        if (resolved === null) { image.removeAttribute('src'); return; }
+        image.alt = soldier ? `Portrait of ${soldier.name}` : 'Selected staff portrait';
+        image.src = `media/staff-portraits/${resolved.toString(16).padStart(8, '0')}.png`;
+        if (image.complete && image.naturalWidth) image.onload();
+    }
+
     function populateStaff(soldier) {
         if (!soldier) return;
         selectedIndex = soldier.index;
@@ -512,6 +536,7 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
             showReadOnly('staff-title', soldier.title.code, soldier.title.label);
             showReadOnly('staff-portrait-choice', soldier.portraitCode, soldier.name + ' portrait');
         }
+        updatePortraitPreview(soldier);
         populateDescriptionSelect(soldier);
 
         setText("staff-hostility", soldier.conditions.hostilityDisplayLevel);
@@ -883,7 +908,10 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
             setText("staff-desc", global.PWSEQuotes?.ordinary?.[key] || descriptionText(soldier));
             markFormDirty();
         });
-        $("staff-portrait-choice")?.addEventListener("change", markFormDirty);
+        $("staff-portrait-choice")?.addEventListener("change", () => {
+            updatePortraitPreview(currentSoldier(), $("staff-portrait-choice").value);
+            markFormDirty();
+        });
         for (const id of ["staff-tag", "staff-title"]) {
             $(id)?.addEventListener("change", markFormDirty);
         }
@@ -948,6 +976,7 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
         global.VicbossRnDMechsUI?.flushPendingEdits?.();
 
         global.PWSEOverviewUI?.flushPendingEdits?.();
+        global.PWSECodenameUI?.flushPendingEdits?.();
         const built = save.buildExport({
             updateLastSaved: $("export-update-last-saved")?.checked ?? true
         });
@@ -962,6 +991,9 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         changesSinceExport = false;
         global.PWSEOverviewUI?.markExported?.();
+        global.PWSECodenameUI?.markExported?.();
+        global.VicbossInsigniasUI?.markExported?.();
+        global.VicbossZekeUI?.markExported?.();
         global.VicbossRnDUI?.markExported?.();
         global.VicbossRnDWeaponsUI?.markExported?.();
         global.VicbossRnDOtherUI?.markExported?.();
@@ -1028,6 +1060,7 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
             save?.setOuterOpsEditing(outerEditingCheckbox.checked);
             renderSidebar({ flush: false });
             global.VicbossRnDMechsUI?.render?.();
+            global.VicbossZekeUI?.render?.();
         });
     }
 
@@ -1059,6 +1092,9 @@ Unique staff and Hideo have opt-in stat editing; OUTER OPS staff cannot be edite
     global.addEventListener('vicboss:items-changed', updateExportButton);
     global.addEventListener('vicboss:weapons-changed', updateExportButton);
     global.addEventListener('vicboss:profile-changed', updateExportButton);
+    global.addEventListener('vicboss:codenames-changed', updateExportButton);
+    global.addEventListener('vicboss:insignias-changed', updateExportButton);
+    global.addEventListener('vicboss:zeke-changed', updateExportButton);
 
     function createCheckpoint() {
         const previous = { save, selectedIndex, uploadedNames, formDirty, changesSinceExport };
